@@ -1,0 +1,16 @@
+{
+  auto_https off
+  admin off
+}
+
+http://{$APP_HOST} {
+  reverse_proxy web:3000
+}
+
+http://{$API_HOST} {
+  reverse_proxy api:3001
+}
+
+http://{$N8N_HOST} {
+  reverse_proxy n8n:5678
+}
