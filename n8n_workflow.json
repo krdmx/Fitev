@@ -1,0 +1,463 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=System Instructions: > Write a short, punchy Cover Letter for Maxim Krendel based on his Base Resume ({{$('base-cv').item.json.content}}) and the Target JD ({{ $('vacancy-about').item.json['Vacancy desc'] }}).\n\nGuidelines:\n\nStyle: \"Israeli High-Tech\" — direct, professional, and results-focused.\n\nHook: Mention his interest in the specific company ({{ $json.clean_site_text }}) and his current B.Sc. studies at BGU.\n\nHighlight: Focus on \"Data-heavy systems\" and \"Modern React Stack\".\n\nLength: Max 250-350 words.\n\nOutput format: Markdown ONLY."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        176
+      ],
+      "id": "96342e12-f39a-4c4e-a2e8-8fadd9f828f1",
+      "name": "COVER LETTER GENERATION",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Mj9DKEcV4Is3LYzI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=  System Instructions: > Write a short, punchy Cover Letter for Maxim Krendel based on his Base Resume ({{ $('base-cv').item.json.content}}) and the Target JD ({{ $('vacancy-about').item.json['Vacancy desc'] }}).\n\nGuidelines:\n\nStyle: \"Israeli High-Tech\" — direct, professional, and results-focused.\n\nHook: Mention his interest in the specific company ({{ $json.clean_site_text }}) and his current B.Sc. studies at BGU.\n\nHighlight: Focus on \"Data-heavy systems\" and \"Modern React Stack\" (Tailwind/Shadcn).\n\nLength: Max 200-250 words.\n\nOutput format: Markdown ONLY."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        1216
+      ],
+      "id": "89d41d06-38e2-4fdb-9209-968febfda930",
+      "name": "PERSONAL NOTE GENERATION",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Mj9DKEcV4Is3LYzI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1YMMEspGE_zH-TSTC3wPSuS0VhixOe0bzWvnYxf4tOGE/edit?usp=sharing"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        32,
+        448
+      ],
+      "id": "a4536a06-5638-473b-acee-93c3a445fbb0",
+      "name": "work-tasks",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "e5xrtTyMCfd8MH3G",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1rFS2IGUaU-RAkkUKtdmWVyNIGcM6O2jbk8bmiwcMPM4/edit?usp=sharing"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        32,
+        256
+      ],
+      "id": "e9b17bca-989c-4cb3-ab1b-532e196576b1",
+      "name": "base-cv",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "e5xrtTyMCfd8MH3G",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Application form",
+        "formDescription": "Testirovanie",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Vacancy desc",
+              "fieldType": "textarea",
+              "defaultValue": "Job Description Munters is a global leader in climate control solutions for mission-critical processes. Through innovative technologies, we create the most optimal climate for demanding industrial and agricultural applications where controlling humidity, temperature and air quality is mission-critical. By offering cutting-edge climate control systems we assist our customers in a wide range of industries, from battery and pharmaceutical to data center cooling and food production. With our innovative and efficient products and solutions, we secure their operations and production quality as well as limit the use of energy and water.  What will you do?  Develop and maintain complex web and device-based applications using Angular. Design and implement scalable and maintainable frontend architecture while ensuring high performance. Collaborate closely with backend developers, UX/UI designers, and product managers to deliver seamless user experiences. Best practices in frontend development, including code structure, reusability, and performance optimization. Research and integrate new technologies, frameworks, and tools to enhance development efficiency. Participate in code reviews, sprint planning, and technical discussions within an agile environment. Engage in problem-solving and contribute to technical decision-making while collaborating with others or working on tasks alone. Skills and Experience:  Over 5 years of practical experience in web development, utilizing JavaScript, TypeScript, HTML, and CSS. 5+ years of experience working with Angular 7+ and later versions. Extensive knowledge in frontend software architecture and managing large-scale projects. Deep understanding of state management, performance optimization, and frontend security best practices. A keen interest in frontend technologies and a reliable approach to monitoring industry changes. Proficient in identifying and simplifying multifaceted needs into concrete assignments. Experience in mentoring team members and collaborating on technical decisions. Proficient in managing projects and showing responsibility for outcomes. About the company In a world with an ever-growing population with climate and sustainability challenges and with changing consumer demands, the global food industry is going through a profound transformation.​  Did you know that 815 million people go to bed hungry every night. At the same time, 1/3 of all food being produced globally is wasted. ​  The FoodTech business is all about changing this. Not only to improve animal welfare, drive yield and sustainability for actors in the global food supply chain, but also to help to feed the world by enabling change in the way we farm and produce food.  Our contribution is to create a digital ecosystem including data capture platforms as connected controllers and IoT and sensors, that together with predictive AI and real-time monitoring allow farmers and growers to improve animal welfare and maximize production while minimizing waste and Co2 emissions – ensuring a transparent and sustainable food production for a growing population.  FoodTech – spearheading digitalization by providing innovative solutions enabling the green transition."
+            },
+            {
+              "fieldLabel": "company site",
+              "defaultValue": "https://www.munters.com/en-us/about-us/"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "64d22c68-a0b3-4c73-a15f-ce151ba495e1",
+      "name": "vacancy-about",
+      "webhookId": "ee5fb304-de42-4904-831a-0b65f8c46bff"
+    },
+    {
+      "parameters": {
+        "url": "=https://r.jina.ai/{{ $('vacancy-about').item.json['company site'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        32,
+        640
+      ],
+      "id": "4851f1a2-22fd-4fca-8595-dafaf686cd87",
+      "name": "about-company"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.data; // Предположим, текст лежит в поле data\n\nlet cleanText = text\n  // 1. Убираем всё содержимое в фигурных {}, круглых () и квадратных [] скобках\n  .replace(/\\{[^}]*\\}/g, ' ')\n  .replace(/\\([^)]*\\)/g, ' ')\n  .replace(/\\[[^\\]]*\\]/g, ' ')\n\n  // 2. Убираем всё, что не является буквой (любого языка), цифрой или пробелом\n  // Это удалит: #, -, ., ,, !, ?, :, ;, /, \\, |, @, $, %, ^, &, *, +, =, ~, `, \" , '\n  .replace(/[^\\p{L}\\p{N}\\s]/gu, ' ')\n\n  // 3. Убираем специфический мусор, который мог остаться словами\n  .replace(/Cookie Policy|Privacy Policy|All Rights Reserved|Menu|Search|Sign In/gi, '')\n\n  // 4. Схлопываем множественные пробелы и переносы в один пробел\n  .replace(/\\s+/g, ' ')\n  .trim()\n  .substring(0, 5000);\n\nreturn [{ json: { clean_site_text: cleanText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        848
+      ],
+      "id": "0025770a-d6e8-4f61-a39c-4daa64b1a80b",
+      "name": "clean-text-about-company"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://gotenberg:3000/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "index.html",
+              "value": "data"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "index.html",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        912,
+        656
+      ],
+      "id": "a41ef6ed-8263-4f24-a560-05c2a87f8870",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=# System Instructions: Senior Technical Recruiter (Israel)\n\n**Goal:** Rewrite ONLY the Summary section of the Base Resume using facts from Work Context, aligned with the Target JD.\n\n**Strict Rules:**\n1. Use ONLY real facts from Work Context. Do not invent achievements.\n2. 3-4 sentences maximum.\n3. Bold key technologies and measurable results using **text**.\n4. Highlight BGU (Ben-Gurion University) as a top-tier academic credential if relevant.\n5. Align tone and keywords with Target JD.\n6. Must reflect the generated Experience and Skills — do not contradict them.\n\n**Context Inputs:**\n- Base Resume: {{ $('base-cv').item.json.content }}\n- Work Context: {{ $('work-tasks').item.json.content }}\n- Target JD: {{ $('vacancy-about').item.json['Vacancy desc'] }}\n- Generated Experience: {{ $('CV GENERATION EXPRERIENCE').item.json.content.parts[0].text }}\n- Generated Skills: {{ $json.content.parts[0].text }}\n\n## Output Format (STRICT):\nOne paragraph of plain text, 3-4 sentences.\n\n## Critical Output Rules:\n- Output ONLY the plain text paragraph. Nothing else.\n- No JSON. No objects. No \"summary\" field. No wrapping.\n- No markdown code blocks.\n- Do NOT escape characters like \\n, \\*, \\\".\n- Do NOT add any preamble or postamble.\n- Start directly with the first word of the summary.\n- End after the last sentence."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        880
+      ],
+      "id": "c5f37eeb-3d28-498e-a5cc-47fc64eacba3",
+      "name": "CV GENERATION SUMMARY",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Mj9DKEcV4Is3LYzI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=# System Instructions: Senior Technical Recruiter (Israel)\n\n**Goal:** Rewrite ONLY the Skills section of the Base Resume using facts from Work Context, aligned with the Target JD.\n\n**Strict Rules:**\n1. Use ONLY technologies present in Work Context.\n2. You MAY add specific libraries from JD that complement existing stack.\n3. NO NEW core technologies not present in Work Context.\n4. Maximum 6 categories.\n5. Each line format: \"Category Name: skill1, skill2, skill3\"\n\n**Context Inputs:**\n- Base Resume: {{ $('base-cv').item.json.content }}\n- Work Context: {{ $('work-tasks').item.json.content }}\n- Target JD: {{ $('vacancy-about').item.json['Vacancy desc'] }}\n- Generated Experience: {{ $json.content.parts[0].text }}\n\n## Output Format (STRICT):\nCategory Name: skill1, skill2, skill3\nCategory Name: skill1, skill2, skill3\n\n## Critical Output Rules:\n- Output ONLY plain text lines, one category per line. No JSON. No bullets. No headers. No explanation.\n- Do NOT escape characters like \\n, \\*, \\\".\n- Start directly with the first category line.\n- End after the last category line."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        880
+      ],
+      "id": "4c075def-52bc-4163-aa90-07be84868b4d",
+      "name": "CV GENERATION SKILLS",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Mj9DKEcV4Is3LYzI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=# System Instructions: Senior Technical Recruiter (Israel)\n\n**Goal:** Rewrite ONLY the Experience section of the Base Resume using facts from Work Context, aligned with the Target JD.\n\n**Strict Rules:**\n1. Use ONLY real tasks and achievements from Work Context. Do not invent facts.\n2. NO NEW core technologies (React, Python, AWS etc.) unless present in Work Context.\n3. You MAY reference specific libraries from JD if they complement existing stack.\n4. Keep EXACT number of bullet points per company as in Base Resume.\n5. Bold technologies and measurable results using **text**.\n6. Integrate JD keywords into descriptions without inventing new facts.\n\n**Context Inputs:**\n- Base Resume: {{ $('base-cv').item.json.content }}\n- Work Context: {{ $('work-tasks').item.json.content }}\n- Target JD: {{ $('vacancy-about').item.json['Vacancy desc'] }}\n\n## Output Format (STRICT):\nOutput a JSON array. Each object must have exactly these fields:\n- \"company\" — job title and company name\n- \"dates\" — employment dates\n- \"experience\" — array of bullet point strings\n\nExample:\n[\n  {\n    \"company\": \"Job Title | Company Name\",\n    \"dates\": \"MM/YYYY – MM/YYYY\",\n    \"experience\": [\n      \"Bullet point 1 with **bolded** technologies\",\n      \"Bullet point 2 with **measurable result**\"\n    ]\n  }\n]\n\n## Critical Output Rules:\n- Output ONLY the JSON array. No explanation. No preamble. No markdown blocks.\n- Field names must be exactly: \"company\", \"dates\", \"experience\"\n- Start directly with [\n- End with ]"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        880
+      ],
+      "id": "45bf3b69-374a-4f67-8b16-7ba992c64600",
+      "name": "CV GENERATION EXPRERIENCE",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Mj9DKEcV4Is3LYzI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Достаём сырые данные из нод\nconst experienceRaw = $('CV GENERATION EXPRERIENCE').first().json.content.parts[0].text //← текст из ноды Experience\nconst skillsRaw = $('CV GENERATION SKILLS').first().json.content.parts[0].text    // ← текст из ноды Skills  \nconst summaryRaw = $input.first().json.content.parts[0].text   // ← текст из ноды Summary\nconst baseCv = $('base-cv').first().json.content       // ← текст из ноды Base CV (для имени, контактов, education, languages)\n\n// ── Парсим Experience ──\n// Формат: \"Company | Dates\\n* bullet\\n* bullet\"\nfunction parseExperience(raw) {\n  // Убираем экранирование если строка пришла как JSON-строка\n  let text = raw.trim();\n  if (text.startsWith('\"')) {\n    try { text = JSON.parse(text); } catch(e) {}\n  }\n  \n  // Парсим JSON массив\n  let jobs;\n  try {\n    jobs = JSON.parse(text);\n  } catch(e) {\n    // Fallback — старый plain text парсер\n    return text.trim().split(/\\n\\n+/).map(job => {\n      const lines = job.trim().split('\\n');\n      const header = lines[0].trim();\n      const bullets = lines\n        .slice(1)\n        .filter(l => l.trim().startsWith('*') || l.trim().startsWith('-'))\n        .map(l => `* ${l.replace(/^[\\*\\-]\\s*/, '').trim()}`);\n      return `**${header}**\\n${bullets.join('\\n')}`;\n    }).join('\\n\\n');\n  }\n\n  return jobs.map(job => {\n    const header = `${job.company} | ${job.dates}`;\n    const bullets = job.experience.map(b => `* ${b}`);\n    return `**${header}**\\n${bullets.join('\\n')}`;\n  }).join('\\n\\n');\n}\n\n\n// ── Парсим Skills ──\n// Формат: \"Category: skill1, skill2\"\nfunction parseSkills(raw) {\n  let text = cleanRaw(raw);\n  \n  // Пробуем парсить как JSON массив\n  try {\n    const arr = JSON.parse(text);\n    if (Array.isArray(arr)) {\n      return arr.map(l => {\n        const [category, ...rest] = l.split(':');\n        return `**${category.trim()}:** ${rest.join(':').trim()}`;\n      }).join('\\n');\n    }\n  } catch(e) {}\n\n  // Fallback — plain text\n  return text.split('\\n')\n    .filter(l => l.includes(':'))\n    .map(l => {\n      const [category, ...rest] = l.split(':');\n      return `**${category.trim()}:** ${rest.join(':').trim()}`;\n    })\n    .join('\\n');\n}\n\n// ── Достаём Education и Languages из Base CV ──\nfunction extractSection(text, sectionName) {\n  const regex = new RegExp(`###\\\\s*${sectionName}\\\\s*\\\\n([\\\\s\\\\S]*?)(?=###|$)`, 'i');\n  const match = text.match(regex);\n  return match ? match[1].trim() : '';\n}\n\nfunction extractHeader(text) {\n  // Берём первые две строки — имя и контакты\n  const lines = text.trim().split('\\n');\n  const nameLine = lines.find(l => l.startsWith('#')) || lines[0];\n  const contactLine = lines.find(l => l.includes('@') || l.includes('+')) || '';\n  return { name: nameLine.replace(/^#+\\s*/, '').trim(), contacts: contactLine.trim() };\n}\n\nfunction cleanRaw(raw) {\n  return raw\n    .trim()\n    .replace(/^\"+|\"+$/g, '')       // кавычки в начале и конце\n    .replace(/\\\\n/g, '\\n')         // экранированные переносы\n    .replace(/\\\\\"/g, '\"')          // экранированные кавычки\n    .replace(/\\\\u2013/g, '–')      // экранированные тире\n    .trim();\n}\n\nfunction cleanSummary(raw) {\n  let text = cleanRaw(raw);\n  \n  // Пробуем парсить как JSON\n  try {\n    const parsed = JSON.parse(text);\n    // Объект с полем summary\n    if (parsed?.summary) return parsed.summary.trim();\n    if (parsed?.Summary) return parsed.Summary.trim();\n    // Массив — берём первый элемент\n    if (Array.isArray(parsed)) return parsed[0]?.summary || parsed[0]?.text || parsed[0] || text;\n  } catch(e) {}\n\n  return text.trim();\n}\n\nconst experience = parseExperience(experienceRaw);\nconst skills = parseSkills(cleanRaw(skillsRaw));\nconst summary = cleanSummary(summaryRaw).trim();\nconst education = extractSection(baseCv, 'Education');\nconst languages = extractSection(baseCv, 'Languages');\nconst { name, contacts } = extractHeader(baseCv);\n\n// ── Собираем финальный Markdown ──\nconst markdown = `# ${name}\n**${contacts}**\n\n---\n\n### Summary\n${summary}\n\n### Skills\n${skills}\n\n### Experience\n${experience}\n\n### Education\n${education}\n\n### Languages\n${languages}`;\n\n// ── Конвертируем Markdown в HTML ──\nfunction markdownToHtml(md) {\n  const lines = md.split(/\\r?\\n/);\n  const html = [];\n  let inList = false;\n\n  for (let line of lines) {\n    line = line.trim();\n\n    if (!line) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      continue;\n    }\n\n    line = line\n      .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n      .replace(/\\*(.*?)\\*/g, '<em>$1</em>')\n      .replace(/\\[(.*?)\\]\\((.*?)\\)/g, '<a target=\"_blank\" href=\"$2\">$1</a>');\n\n    if (line.startsWith('### ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h3>${line.substring(4)}</h3>`);\n    } else if (line.startsWith('## ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h2>${line.substring(3)}</h2>`);\n    } else if (line.startsWith('# ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h1>${line.substring(2)}</h1>`);\n    } else if (line === '---') {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push('<hr>');\n    } else if (line.startsWith('* ') || line.startsWith('- ')) {\n      if (!inList) { html.push('<ul>'); inList = true; }\n      html.push(`<li>${line.substring(2)}</li>`);\n    } else {\n      if (inList) { html.push('</ul>'); inList = false; }\n      if (html.length > 0 && html[html.length - 1].startsWith('<h1>')) {\n        html.push(`<p class=\"contact-info\">${line}</p>`);\n      } else {\n        html.push(`<p>${line}</p>`);\n      }\n    }\n  }\n\n  if (inList) html.push('</ul>');\n  return html.join('\\n');\n}\n\nconst htmlString = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Arial, Helvetica, sans-serif; line-height: 1.4; color: #222; margin: 40px; font-size: 13px; }\n    h1 { text-align: center; margin: 0 0 5px 0; color: #000; font-size: 24px; letter-spacing: 0.5px; }\n    .contact-info { text-align: center; font-size: 12px; color: #444; margin: 0 0 15px 0; }\n    hr { border: none; border-top: 1px solid #ddd; margin: 15px 0; }\n    h3 { border-bottom: 1px solid #333; padding-bottom: 2px; margin-top: 15px; margin-bottom: 8px; font-size: 14px; text-transform: uppercase; color: #111; }\n    p { margin: 4px 0; }\n    ul { margin: 4px 0 10px 0; padding-left: 20px; }\n    li { margin-bottom: 4px; }\n    a { color: #0056b3; text-decoration: none; }\n    strong { color: #000; font-weight: 600; }\n  </style>\n</head>\n<body>\n${markdownToHtml(markdown)}\n</body>\n</html>`;\n\nconst binaryData = Buffer.from(htmlString, 'utf-8');\n\nreturn [{\n  json: { filename: 'resume.html' },\n  binary: {\n    data: await this.helpers.prepareBinaryData(binaryData, 'index.html', 'text/html')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        656
+      ],
+      "id": "3d0285dd-a68b-4f41-8ba4-03b3098d05e0",
+      "name": "make-final-cv"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "work-tasks": {
+      "main": [
+        [
+          {
+            "node": "about-company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "base-cv": {
+      "main": [
+        [
+          {
+            "node": "work-tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "vacancy-about": {
+      "main": [
+        [
+          {
+            "node": "base-cv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "about-company": {
+      "main": [
+        [
+          {
+            "node": "clean-text-about-company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "clean-text-about-company": {
+      "main": [
+        [
+          {
+            "node": "PERSONAL NOTE GENERATION",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "COVER LETTER GENERATION",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CV GENERATION EXPRERIENCE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "CV GENERATION SUMMARY": {
+      "main": [
+        [
+          {
+            "node": "make-final-cv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CV GENERATION EXPRERIENCE": {
+      "main": [
+        [
+          {
+            "node": "CV GENERATION SKILLS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CV GENERATION SKILLS": {
+      "main": [
+        [
+          {
+            "node": "CV GENERATION SUMMARY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "make-final-cv": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "77fec9ba-7d06-4560-83f5-292d0e7c137a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a5c98703c710d3f5333caaa111eceb17248ab0eac5840cc81de175205b80f61c"
+  },
+  "id": "42klPmzl86t9aBaA",
+  "tags": []
+}
