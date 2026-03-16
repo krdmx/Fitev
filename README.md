@@ -122,6 +122,8 @@ After that:
 - api: `http://localhost:3001`
 - n8n: `http://localhost:5678`
 
+In dev mode, `n8n` editor links and webhook URLs are also generated against `http://localhost:5678`.
+
 ### 4. Stop infrastructure
 
 ```bash
@@ -258,9 +260,14 @@ API status endpoint:
 - `GET /api/v1/status`
 - example: `http://localhost:3001/api/v1/status`
 
+Application trigger endpoint:
+
+- `POST /api/v1/applications`
+- example: `http://localhost:3001/api/v1/applications`
+
 ## n8n
 
-The project includes n8n bootstrap logic and a seed workflow.
+The project includes n8n bootstrap logic, a seed workflow, and env-driven credential import.
 
 Files:
 
@@ -268,13 +275,57 @@ Files:
 - [bootstrap.sh](/mnt/c/Users/maxim/Documents/pep/infra/n8n/scripts/bootstrap.sh)
 - [workflow.seed.json](/mnt/c/Users/maxim/Documents/pep/infra/n8n/workflows/workflow.seed.json)
 
-After the first launch:
+Imported automatically on `n8n` startup:
 
-1. Open n8n
-2. Create credentials manually
-3. Rebind them to the imported workflow
+- Gemini credential from `GOOGLE_GEMINI_API_KEY`
+- Google Docs credential from a Google service account in the root [`.env`](/mnt/c/Users/maxim/Documents/pep/.env)
+
+Required env values for Google Docs automation:
+
+```env
+N8N_GOOGLE_SERVICE_ACCOUNT_EMAIL=service-account@project.iam.gserviceaccount.com
+N8N_GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
+```
+
+Optional:
+
+```env
+N8N_GOOGLE_SERVICE_ACCOUNT_IMPERSONATE=false
+N8N_GOOGLE_SERVICE_ACCOUNT_DELEGATED_EMAIL=
+```
+
+Notes:
+
+- keep `N8N_GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` on one line and escape line breaks as `\n`
+- share the source Google Docs with the service account email, or enable domain-wide delegation and set `N8N_GOOGLE_SERVICE_ACCOUNT_DELEGATED_EMAIL`
+- `GOOGLE_DOCS_CLIENT_ID` and `GOOGLE_DOCS_CLIENT_SECRET` are no longer needed for automated bootstrap
 
 n8n variables come from the root [`.env`](/mnt/c/Users/maxim/Documents/pep/.env).
+
+Backend-to-n8n trigger:
+
+- set `N8N_WORKFLOW_WEBHOOK_URL` for the API
+- local dev default in [apps/api/.env.example](/mnt/c/Users/maxim/Documents/pep/apps/api/.env.example): `http://localhost:5678/webhook/generate-cv`
+- Docker default in [docker-compose.yaml](/mnt/c/Users/maxim/Documents/pep/docker-compose.yaml): `http://n8n:5678/webhook/generate-cv`
+- the seed workflow expects a JSON `POST` body with `ticketId`, `fullName`, `vacancyDescription`, `baseCv`, and `workTasks`
+- activate the workflow once in n8n so the production webhook keeps listening
+
+Application profile text is stored in PostgreSQL via `AppMetadata`:
+
+- `key = 'baseCv'`
+- `key = 'workTasks'`
+
+Example seed:
+
+```sql
+INSERT INTO "AppMetadata" ("key", "value", "updatedAt")
+VALUES
+  ('baseCv', 'Base CV markdown/text here', NOW()),
+  ('workTasks', 'Work tasks text here', NOW())
+ON CONFLICT ("key") DO UPDATE SET
+  "value" = EXCLUDED."value",
+  "updatedAt" = NOW();
+```
 
 ## Typical Workflow
 
@@ -463,6 +514,8 @@ pnpm dev
 - api: `http://localhost:3001`
 - n8n: `http://localhost:5678`
 
+В dev-режиме `n8n` также генерирует editor links и webhook URL через `http://localhost:5678`.
+
 ### 4. Остановить инфраструктуру
 
 ```bash
@@ -601,7 +654,7 @@ API status endpoint:
 
 ## n8n
 
-В проекте есть bootstrap для n8n и seed workflow.
+В проекте есть bootstrap для n8n, seed workflow и автоматический импорт credentials из `.env`.
 
 Файлы:
 
@@ -609,11 +662,30 @@ API status endpoint:
 - [bootstrap.sh](/mnt/c/Users/maxim/Documents/pep/infra/n8n/scripts/bootstrap.sh)
 - [workflow.seed.json](/mnt/c/Users/maxim/Documents/pep/infra/n8n/workflows/workflow.seed.json)
 
-После первого запуска:
+При старте `n8n` автоматически импортируются:
 
-1. Открой n8n
-2. Создай credentials вручную
-3. Привяжи их к импортированному workflow
+- credential для Gemini из `GOOGLE_GEMINI_API_KEY`
+- credential для Google Docs из service account, описанного в корневом [`.env`](/mnt/c/Users/maxim/Documents/pep/.env)
+
+Обязательные переменные для Google Docs:
+
+```env
+N8N_GOOGLE_SERVICE_ACCOUNT_EMAIL=service-account@project.iam.gserviceaccount.com
+N8N_GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
+```
+
+Опционально:
+
+```env
+N8N_GOOGLE_SERVICE_ACCOUNT_IMPERSONATE=false
+N8N_GOOGLE_SERVICE_ACCOUNT_DELEGATED_EMAIL=
+```
+
+Важно:
+
+- `N8N_GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` нужно хранить в одной строке, экранируя переводы строк как `\n`
+- исходные Google Docs должны быть расшарены на email service account, либо нужно включить domain-wide delegation и указать `N8N_GOOGLE_SERVICE_ACCOUNT_DELEGATED_EMAIL`
+- `GOOGLE_DOCS_CLIENT_ID` и `GOOGLE_DOCS_CLIENT_SECRET` больше не нужны для автоматического bootstrap
 
 Переменные для n8n берутся из корневого [`.env`](/mnt/c/Users/maxim/Documents/pep/.env).
 
