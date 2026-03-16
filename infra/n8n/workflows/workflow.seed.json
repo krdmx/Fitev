@@ -5,14 +5,14 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "models/gemini-3-flash-preview",
+          "value": "models/gemini-3.1-flash-lite-preview",
           "mode": "list",
-          "cachedResultName": "models/gemini-3-flash-preview"
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
         },
         "messages": {
           "values": [
             {
-              "content": "=System Instructions: > Write a short, punchy Cover Letter for Maxim Krendel based on his Base Resume ({{$('base-cv').item.json.content}}) and the Target JD ({{ $('vacancy-about').item.json['Vacancy desc'] }}).\n\nGuidelines:\n\nStyle: \"Israeli High-Tech\" \u2014 direct, professional, and results-focused.\n\nHook: Mention his interest in the specific company ({{ $json.clean_site_text }}) and his current B.Sc. studies at BGU.\n\nHighlight: Focus on \"Data-heavy systems\" and \"Modern React Stack\".\n\nLength: Max 250-350 words.\n\nOutput format: Markdown ONLY."
+              "content": "=# System Instructions: Expert Career Coach & Recruiter (Israel)\n\n**Goal:** Write a short, punchy Cover Letter for Maxim Krendel targeting \nthe specific company, perfectly aligned with the Target JD.\n\n---\n\n## Strict Rules:\n1. **Zero Hallucination:** Frame Maxim's achievements in the best possible \n   light, but STRICTLY FORBIDDEN from inventing metrics, technologies, or \n   experiences. Use ONLY facts from the Refined Resume.\n2. **Style & Tone:** \"Israeli High-Tech\" \u2014 direct (Tachles), confident, \n   professional, results-focused. No fluff, no corporate language.\n3. **Length:** Strictly 300-400 words.\n4. **Formatting:** Bold key technologies and measurable results using \n   **text** to make it scannable.\n\n---\n\n## Context Inputs:\n- Refined Resume: {{ $json.content.parts[0].text }}\n- Target JD: {{ $('cv-generation-start').item.json.body.vacancy }}\n\n---\n\n## Letter Structure (follow EXACTLY, paragraph by paragraph):\n\n**Paragraph 1 \u2014 Hook (2-3 sentences)**\n- Mention the company by name and ONE specific thing about what they build \n  (from Target Company Info or JD) that genuinely connects to Maxim's \n  experience \u2014 not generic praise, a real technical or product parallel.\n- State that Maxim is currently completing his B.Sc. in Information Systems \n  at Ben-Gurion University.\n- DO NOT say \"I am highly motivated\" or \"I am excited to apply\".\n\n**Paragraph 2 \u2014 Proof (3-4 sentences)**\n- Identify the TOP 2 technical requirements from the JD.\n- For each, bring ONE concrete example from the Refined Resume that directly \n  answers it.\n- Focus on the PROBLEM SOLVED and RESULT, not on job duties.\n- Do NOT list technologies. Do NOT retell the CV chronologically.\n\n**Paragraph 3 \u2014 Edge / Differentiation (2-3 sentences)**\n- Answer: what does Maxim bring that a typical candidate with the same \n  years of experience wouldn't?\n- This could be: unusual combination of skills, specific context \n  (scale, stack, domain), or something from the JD marked as \"nice to have\" \n  that he actually has.\n- The differentiator must be a COMBINATION that is rare: e.g. scale + specific domain, or technical depth + product ownership, or stack expertise + something from JD marked as \"nice to have\".\n- AI tool usage is NOT a differentiator. Ignore it.\n- Generic soft skills (ownership, clean code) are NOT differentiators unless \n  backed by a specific example not already used in Paragraph 2.\n- DO NOT repeat what was said in Paragraph 2.\n\n**Paragraph 4 \u2014 Forward-looking close (1-2 sentences)**\n- One specific thing Maxim wants to work on / contribute to at THIS company.\n- Name a SPECIFIC product feature or technical challenge visible in the JD \n  or Company Info.\n- Forbidden phrases: \"drive impact\", \"apply my skills\", \"contribute to\", \"I am eager to\".\n- Must reference something real from the JD or Company Info, not a generic \n  \"I want to grow\" statement.\n\n---\n\n## Output Format (STRICT):\n- Output ONLY raw Markdown text. Nothing else.\n- No JSON. No wrappers. No code blocks.\n- Do NOT escape characters like \\n, \\*, \\\".\n- No preamble or postamble.\n- Start directly with: \"Dear Hiring Team at [Company Name],\"\n- DO NOT include a sign-off. End after the last sentence of Paragraph 4."
             }
           ]
         },
@@ -22,129 +22,46 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        464,
-        176
+        -208,
+        1888
       ],
       "id": "96342e12-f39a-4c4e-a2e8-8fadd9f828f1",
       "name": "COVER LETTER GENERATION",
-      "disabled": true
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Mj9DKEcV4Is3LYzI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "models/gemini-3-flash-preview",
-          "mode": "list",
-          "cachedResultName": "models/gemini-3-flash-preview"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=  System Instructions: > Write a short, punchy Cover Letter for Maxim Krendel based on his Base Resume ({{ $('base-cv').item.json.content}}) and the Target JD ({{ $('vacancy-about').item.json['Vacancy desc'] }}).\n\nGuidelines:\n\nStyle: \"Israeli High-Tech\" \u2014 direct, professional, and results-focused.\n\nHook: Mention his interest in the specific company ({{ $json.clean_site_text }}) and his current B.Sc. studies at BGU.\n\nHighlight: Focus on \"Data-heavy systems\" and \"Modern React Stack\" (Tailwind/Shadcn).\n\nLength: Max 200-250 words.\n\nOutput format: Markdown ONLY."
-            }
-          ]
-        },
-        "jsonOutput": true,
-        "builtInTools": {},
+        "httpMethod": "POST",
+        "path": "generate-cv",
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.googleGemini",
-      "typeVersion": 1.1,
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
       "position": [
-        432,
-        1216
+        -880,
+        1888
       ],
-      "id": "89d41d06-38e2-4fdb-9209-968febfda930",
-      "name": "PERSONAL NOTE GENERATION",
-      "disabled": true
+      "id": "2d33754c-9c9d-4ba6-98c3-73f65da52ea9",
+      "name": "cv-generation-start",
+      "webhookId": "555d03c2-ef1f-4f43-be7f-b899f6ee49e3"
     },
     {
       "parameters": {
-        "operation": "get",
-        "documentURL": "https://docs.google.com/document/d/1YMMEspGE_zH-TSTC3wPSuS0VhixOe0bzWvnYxf4tOGE/edit?usp=sharing"
-      },
-      "type": "n8n-nodes-base.googleDocs",
-      "typeVersion": 2,
-      "position": [
-        32,
-        448
-      ],
-      "id": "a4536a06-5638-473b-acee-93c3a445fbb0",
-      "name": "work-tasks",
-      "alwaysOutputData": false,
-      "executeOnce": false
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "documentURL": "https://docs.google.com/document/d/1rFS2IGUaU-RAkkUKtdmWVyNIGcM6O2jbk8bmiwcMPM4/edit?usp=sharing"
-      },
-      "type": "n8n-nodes-base.googleDocs",
-      "typeVersion": 2,
-      "position": [
-        32,
-        256
-      ],
-      "id": "e9b17bca-989c-4cb3-ab1b-532e196576b1",
-      "name": "base-cv",
-      "alwaysOutputData": false,
-      "executeOnce": false
-    },
-    {
-      "parameters": {
-        "formTitle": "Application form",
-        "formDescription": "Testirovanie",
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "Vacancy desc",
-              "fieldType": "textarea",
-              "defaultValue": "Job Description Munters is a global leader in climate control solutions for mission-critical processes. Through innovative technologies, we create the most optimal climate for demanding industrial and agricultural applications where controlling humidity, temperature and air quality is mission-critical. By offering cutting-edge climate control systems we assist our customers in a wide range of industries, from battery and pharmaceutical to data center cooling and food production. With our innovative and efficient products and solutions, we secure their operations and production quality as well as limit the use of energy and water.  What will you do?  Develop and maintain complex web and device-based applications using Angular. Design and implement scalable and maintainable frontend architecture while ensuring high performance. Collaborate closely with backend developers, UX/UI designers, and product managers to deliver seamless user experiences. Best practices in frontend development, including code structure, reusability, and performance optimization. Research and integrate new technologies, frameworks, and tools to enhance development efficiency. Participate in code reviews, sprint planning, and technical discussions within an agile environment. Engage in problem-solving and contribute to technical decision-making while collaborating with others or working on tasks alone. Skills and Experience:  Over 5 years of practical experience in web development, utilizing JavaScript, TypeScript, HTML, and CSS. 5+ years of experience working with Angular 7+ and later versions. Extensive knowledge in frontend software architecture and managing large-scale projects. Deep understanding of state management, performance optimization, and frontend security best practices. A keen interest in frontend technologies and a reliable approach to monitoring industry changes. Proficient in identifying and simplifying multifaceted needs into concrete assignments. Experience in mentoring team members and collaborating on technical decisions. Proficient in managing projects and showing responsibility for outcomes. About the company In a world with an ever-growing population with climate and sustainability challenges and with changing consumer demands, the global food industry is going through a profound transformation.\u200b  Did you know that 815 million people go to bed hungry every night. At the same time, 1/3 of all food being produced globally is wasted. \u200b  The FoodTech business is all about changing this. Not only to improve animal welfare, drive yield and sustainability for actors in the global food supply chain, but also to help to feed the world by enabling change in the way we farm and produce food.  Our contribution is to create a digital ecosystem including data capture platforms as connected controllers and IoT and sensors, that together with predictive AI and real-time monitoring allow farmers and growers to improve animal welfare and maximize production while minimizing waste and Co2 emissions \u2013 ensuring a transparent and sustainable food production for a growing population.  FoodTech \u2013 spearheading digitalization by providing innovative solutions enabling the green transition."
-            },
-            {
-              "fieldLabel": "company site",
-              "defaultValue": "https://www.munters.com/en-us/about-us/"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.5,
-      "position": [
-        0,
-        0
-      ],
-      "id": "64d22c68-a0b3-4c73-a15f-ce151ba495e1",
-      "name": "vacancy-about",
-      "webhookId": "ee5fb304-de42-4904-831a-0b65f8c46bff"
-    },
-    {
-      "parameters": {
-        "url": "=https://r.jina.ai/{{ $('vacancy-about').item.json['company site'] }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        32,
-        640
-      ],
-      "id": "4851f1a2-22fd-4fca-8595-dafaf686cd87",
-      "name": "about-company"
-    },
-    {
-      "parameters": {
-        "jsCode": "const text = $input.first().json.data; // \u041f\u0440\u0435\u0434\u043f\u043e\u043b\u043e\u0436\u0438\u043c, \u0442\u0435\u043a\u0441\u0442 \u043b\u0435\u0436\u0438\u0442 \u0432 \u043f\u043e\u043b\u0435 data\n\nlet cleanText = text\n  // 1. \u0423\u0431\u0438\u0440\u0430\u0435\u043c \u0432\u0441\u0451 \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u043c\u043e\u0435 \u0432 \u0444\u0438\u0433\u0443\u0440\u043d\u044b\u0445 {}, \u043a\u0440\u0443\u0433\u043b\u044b\u0445 () \u0438 \u043a\u0432\u0430\u0434\u0440\u0430\u0442\u043d\u044b\u0445 [] \u0441\u043a\u043e\u0431\u043a\u0430\u0445\n  .replace(/\\{[^}]*\\}/g, ' ')\n  .replace(/\\([^)]*\\)/g, ' ')\n  .replace(/\\[[^\\]]*\\]/g, ' ')\n\n  // 2. \u0423\u0431\u0438\u0440\u0430\u0435\u043c \u0432\u0441\u0451, \u0447\u0442\u043e \u043d\u0435 \u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0431\u0443\u043a\u0432\u043e\u0439 (\u043b\u044e\u0431\u043e\u0433\u043e \u044f\u0437\u044b\u043a\u0430), \u0446\u0438\u0444\u0440\u043e\u0439 \u0438\u043b\u0438 \u043f\u0440\u043e\u0431\u0435\u043b\u043e\u043c\n  // \u042d\u0442\u043e \u0443\u0434\u0430\u043b\u0438\u0442: #, -, ., ,, !, ?, :, ;, /, \\, |, @, $, %, ^, &, *, +, =, ~, `, \" , '\n  .replace(/[^\\p{L}\\p{N}\\s]/gu, ' ')\n\n  // 3. \u0423\u0431\u0438\u0440\u0430\u0435\u043c \u0441\u043f\u0435\u0446\u0438\u0444\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u043c\u0443\u0441\u043e\u0440, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u043c\u043e\u0433 \u043e\u0441\u0442\u0430\u0442\u044c\u0441\u044f \u0441\u043b\u043e\u0432\u0430\u043c\u0438\n  .replace(/Cookie Policy|Privacy Policy|All Rights Reserved|Menu|Search|Sign In/gi, '')\n\n  // 4. \u0421\u0445\u043b\u043e\u043f\u044b\u0432\u0430\u0435\u043c \u043c\u043d\u043e\u0436\u0435\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435 \u043f\u0440\u043e\u0431\u0435\u043b\u044b \u0438 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u044b \u0432 \u043e\u0434\u0438\u043d \u043f\u0440\u043e\u0431\u0435\u043b\n  .replace(/\\s+/g, ' ')\n  .trim()\n  .substring(0, 5000);\n\nreturn [{ json: { clean_site_text: cleanText } }];"
+        "jsCode": "const rawText = $input.first().json.content.parts[0].text; \nconst name = $('cv-generation-start').first().json.body.fullName\n\n// 2. \u0424\u043e\u0440\u043c\u0430\u0442\u0438\u0440\u0443\u0435\u043c \u0442\u0435\u043a\u0441\u0442 \u0434\u043b\u044f HTML\nlet formattedText = rawText\n  // \u041e\u0447\u0438\u0449\u0430\u0435\u043c \u043e\u0442 \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u044b\u0445 \u043c\u0430\u0440\u043a\u0434\u0430\u0443\u043d-\u0431\u043b\u043e\u043a\u043e\u0432, \u0435\u0441\u043b\u0438 LLM \u0432\u0441\u0451-\u0442\u0430\u043a\u0438 \u0438\u0445 \u0432\u044b\u0434\u0430\u0441\u0442\n  .replace(/```markdown/gi, '').replace(/```/gi, '').trim()\n  // \u0417\u0430\u043c\u0435\u043d\u044f\u0435\u043c \u0436\u0438\u0440\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442 \u043c\u0430\u0440\u043a\u0434\u0430\u0443\u043d\u0430 \u043d\u0430 HTML\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n  // \u0417\u0430\u043c\u0435\u043d\u044f\u0435\u043c \u0434\u0432\u043e\u0439\u043d\u044b\u0435 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u044b \u0441\u0442\u0440\u043e\u043a \u043d\u0430 \u0437\u0430\u043a\u0440\u044b\u0442\u0438\u0435/\u043e\u0442\u043a\u0440\u044b\u0442\u0438\u0435 \u0430\u0431\u0437\u0430\u0446\u0430\n  .replace(/\\n\\n/g, '</p><p>')\n  // \u0417\u0430\u043c\u0435\u043d\u044f\u0435\u043c \u043e\u0441\u0442\u0430\u0432\u0448\u0438\u0435\u0441\u044f \u043e\u0434\u0438\u043d\u0430\u0440\u043d\u044b\u0435 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u044b \u043d\u0430 <br>\n  .replace(/\\n/g, '<br>');\n\n// \u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c \u0432\u0435\u0441\u044c \u0441\u0433\u0435\u043d\u0435\u0440\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0442\u0435\u043a\u0441\u0442 \u0432 \u043d\u0430\u0447\u0430\u043b\u044c\u043d\u044b\u0439 \u0438 \u043a\u043e\u043d\u0435\u0447\u043d\u044b\u0439 \u0442\u0435\u0433 \u0430\u0431\u0437\u0430\u0446\u0430\nformattedText = `<p>${formattedText}</p>`;\n\n// 3. \u0421\u043e\u0431\u0438\u0440\u0430\u0435\u043c HTML-\u0448\u0430\u0431\u043b\u043e\u043d\nconst htmlString = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    /* \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u044b \u0438 \u0448\u0440\u0438\u0444\u0442\u043e\u0432 */\n    body { \n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; \n      line-height: 1.6; \n      color: #222; \n      margin: 60px; /* \u0411\u043e\u043b\u044c\u0448\u0438\u0435 \u043e\u0442\u0441\u0442\u0443\u043f\u044b \u0434\u043b\u044f \u043a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u043e\u0433\u043e \u043f\u0438\u0441\u044c\u043c\u0430 */\n      font-size: 14px; \n    }\n    \n    /* \u0428\u0430\u043f\u043a\u0430 \u043f\u0438\u0441\u044c\u043c\u0430 (Letterhead) */\n    .header {\n      border-bottom: 2px solid #2c3e50;\n      padding-bottom: 15px;\n      margin-bottom: 40px;\n    }\n    .header h1 {\n      margin: 0;\n      font-size: 26px;\n      text-transform: uppercase;\n      letter-spacing: 1.5px;\n      color: #111;\n    }\n    .header p {\n      margin: 5px 0 0 0;\n      font-size: 12px;\n      color: #555;\n    }\n\n    /* \u041e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 \u0442\u0435\u043a\u0441\u0442 \u043f\u0438\u0441\u044c\u043c\u0430 */\n    .letter-body p {\n      margin-bottom: 12px;\n      text-align: justify; /* \u0412\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u043d\u0438\u0435 \u043f\u043e \u0448\u0438\u0440\u0438\u043d\u0435 */\n      text-indent: 2.5em; /* \u041a\u0420\u0410\u0421\u041d\u0410\u042f \u0421\u0422\u0420\u041e\u041a\u0410 \u0434\u043b\u044f \u0430\u0431\u0437\u0430\u0446\u0435\u0432 */\n    }\n    \n    /* \u0423\u0431\u0438\u0440\u0430\u0435\u043c \u043a\u0440\u0430\u0441\u043d\u0443\u044e \u0441\u0442\u0440\u043e\u043a\u0443 \u0443 \u043f\u0435\u0440\u0432\u043e\u0433\u043e \u0430\u0431\u0437\u0430\u0446\u0430 (\u041f\u0440\u0438\u0432\u0435\u0442\u0441\u0442\u0432\u0438\u044f \"Dear Hiring Team...\") */\n    .letter-body p:first-of-type {\n      text-indent: 0;\n    }\n\n    strong { \n      color: #000; \n    }\n\n    /* \u0411\u043b\u043e\u043a \u0441 \u043f\u043e\u0434\u043f\u0438\u0441\u044c\u044e (\u0431\u0435\u0437 \u043a\u0440\u0430\u0441\u043d\u043e\u0439 \u0441\u0442\u0440\u043e\u043a\u0438) */\n    .sign-off {\n      margin-top: 40px;\n    }\n    .sign-off p {\n      margin: 0 0 5px 0;\n      text-indent: 0; /* \u0417\u0434\u0435\u0441\u044c \u043a\u0440\u0430\u0441\u043d\u0430\u044f \u0441\u0442\u0440\u043e\u043a\u0430 \u043d\u0435 \u043d\u0443\u0436\u043d\u0430 */\n    }\n    .contact-links {\n      color: #555;\n      font-size: 13px;\n    }\n    .contact-links a {\n      color: #0066cc;\n      text-decoration: none;\n    }\n  </style>\n</head>\n<body>\n\n  <!-- \u0428\u0430\u043f\u043a\u0430 \u043f\u0438\u0441\u044c\u043c\u0430 -->\n  <div class=\"header\">\n    <h1>Maxim Krendel</h1>\n    <p>Senior Frontend Engineer | B.Sc. Information Systems, BGU</p>\n  </div>\n\n  <!-- \u0421\u0430\u043c\u043e \u0442\u0435\u043b\u043e \u043f\u0438\u0441\u044c\u043c\u0430, \u0441\u0433\u0435\u043d\u0435\u0440\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0435 LLM -->\n  <div class=\"letter-body\">\n    ${formattedText}\n  </div>\n\n  <!-- \u0416\u0435\u0441\u0442\u043a\u043e \u0437\u0430\u0448\u0438\u0442\u0430\u044f \u043f\u043e\u0434\u043f\u0438\u0441\u044c \u0438 \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u044b (\u041c\u041e\u041a) -->\n  <div class=\"sign-off\">\n    <p>Sincerely,</p>\n    <p style=\"margin-top: 20px;\"><strong>${name}</strong></p>\n  </div>\n\n</body>\n</html>`;\n\n// 4. \u041a\u043e\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u0443\u0435\u043c \u0441\u0442\u0440\u043e\u043a\u0443 \u0432 \u0431\u0443\u0444\u0435\u0440 \u0438 \u043e\u0442\u0434\u0430\u0435\u043c n8n \u0432\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u043c \u043c\u0435\u0442\u043e\u0434\u043e\u043c\nconst binaryData = await this.helpers.prepareBinaryData(\n  Buffer.from(htmlString, 'utf8'), \n  'index.html', \n  'text/html'\n);\n\n// 5. \u0412\u043e\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u043c \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0432 \u0444\u043e\u0440\u043c\u0430\u0442\u0435 \u0444\u0430\u0439\u043b\u0430\nreturn [{\n  json: { filename: 'cl.html' },\n  binary: {\n    data: binaryData}\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        32,
-        848
+        128,
+        1888
       ],
-      "id": "0025770a-d6e8-4f61-a39c-4daa64b1a80b",
-      "name": "clean-text-about-company"
+      "id": "5c4bf964-850f-477a-817e-89bdc28c852b",
+      "name": "make-cover-letter-html"
     },
     {
       "parameters": {
@@ -170,7 +87,8 @@
             "response": {
               "fullResponse": true,
               "neverError": true,
-              "responseFormat": "file"
+              "responseFormat": "file",
+              "outputPropertyName": "coverLetter"
             }
           }
         }
@@ -178,11 +96,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        912,
-        656
+        368,
+        1888
       ],
-      "id": "a41ef6ed-8263-4f24-a560-05c2a87f8870",
-      "name": "HTTP Request"
+      "id": "daf1b9bf-1152-467c-ad02-9f0fa795418b",
+      "name": "make-cover-letter-pdf"
     },
     {
       "parameters": {
@@ -195,7 +113,7 @@
         "messages": {
           "values": [
             {
-              "content": "=# System Instructions: Senior Technical Recruiter (Israel)\n\n**Goal:** Rewrite ONLY the Summary section of the Base Resume using facts from Work Context, aligned with the Target JD.\n\n**Strict Rules:**\n1. Use ONLY real facts from Work Context. Do not invent achievements.\n2. 3-4 sentences maximum.\n3. Bold key technologies and measurable results using **text**.\n4. Highlight BGU (Ben-Gurion University) as a top-tier academic credential if relevant.\n5. Align tone and keywords with Target JD.\n6. Must reflect the generated Experience and Skills \u2014 do not contradict them.\n\n**Context Inputs:**\n- Base Resume: {{ $('base-cv').item.json.content }}\n- Work Context: {{ $('work-tasks').item.json.content }}\n- Target JD: {{ $('vacancy-about').item.json['Vacancy desc'] }}\n- Generated Experience: {{ $('CV GENERATION EXPRERIENCE').item.json.content.parts[0].text }}\n- Generated Skills: {{ $json.content.parts[0].text }}\n\n## Output Format (STRICT):\nOne paragraph of plain text, 3-4 sentences.\n\n## Critical Output Rules:\n- Output ONLY the plain text paragraph. Nothing else.\n- No JSON. No objects. No \"summary\" field. No wrapping.\n- No markdown code blocks.\n- Do NOT escape characters like \\n, \\*, \\\".\n- Do NOT add any preamble or postamble.\n- Start directly with the first word of the summary.\n- End after the last sentence."
+              "content": "=# System Instructions: Senior Technical Recruiter Agent (Israel)\n\n**Goal:** Adapt the \"Base CV\" for a specific \"Target JD\" (Job Description) using the \"Work Context\" and \"Company Info\". You must update ONLY the Summary, Skills, and Experience sections to perfectly align the candidate with the role.\n\n**Context Inputs:**\n- Base Resume: {{ $('cv-generation-start').item.json.body.baseCv }}\n- Work Context: {{ $('cv-generation-start').item.json.body.workTasks }}\n- Target JD: {{ $('cv-generation-start').item.json.body.vacancy }}\n\n## STRICT RULES (CRITICAL):\n1. **Summary (STRICT YoE ACCURACY):** Write a professional summary (3-4 sentences) that highlights alignment with the Target JD. **CRITICAL:** You are STRICTLY FORBIDDEN from inventing or exaggerating the total Years of Experience (YoE). You MUST calculate YoE strictly based on the actual dates provided in the Base CV. If the Target JD asks for 8 years but the Base CV shows 3, you must either write \"3 years of experience\" or omit the exact number entirely. Never fake the timeline.\n2. **Strict Skills Policy (READ CAREFULLY):** - **THE BAN:** You are STRICTLY FORBIDDEN from adding major frameworks, core programming languages, or primary cloud providers (e.g., Angular, Python, AWS, Vue, Java) if they are not explicitly present in the Work Context.\n   - **THE INJECTION:** You MUST extract minor tools, libraries, packages, and methodologies (e.g., Axios, React Query, Jest, Tailwind, CI/CD, Agile, Zod) from the Target JD and actively INJECT them into both the \"Skills\" list and the \"Experience\" bullet points. Do this even if they are not in the Work Context, provided they logically complement the existing tech stack.\n3. **Experience (Job History):** - **KEEP ALL JOBS:** You are STRICTLY FORBIDDEN from deleting any jobs. Every single workplace listed in the Base CV must appear in the final output.\n   - **DETAIL FOCUS:** Write and adapt bullet points ONLY for the 2 or 3 most recent jobs to show alignment with the Target JD. Naturally weave the injected minor tools into these recent bullet points and use bolding for key technologies and measurable metrics (e.g., **+15% performance**). You may adapt the phrasing of your tasks to match the JD's terminology.\n   - **OLDER JOBS:** For jobs beyond the most recent 3, output ONLY the Job Title, Company, and Dates. DO NOT write any bullet points or descriptions for them.\n4. **No JSON:** Return ONLY raw text in the exact Markdown template below. Do not wrap in ```markdown or ```json blocks.\n\n## OUTPUT TEMPLATE (YOU MUST FOLLOW THIS EXACTLY):\n\n### Summary\n[Insert adapted summary here]\n\n### Skills\n**Languages & Core:** [Updated list]\n**Architecture & State:** [Updated list]\n**Frameworks & Libraries:** [Updated list]\n**Styling & UI:** [Updated list]\n**Tools & Infrastructure:** [Updated list]\n**Testing & Quality:** [Updated list]\n\n### Experience\n\n**[Recent Job Title 1] | [Company 1]** | *[Dates 1]*\n* [Adapted bullet point 1]\n* [Adapted bullet point 2]\n* [Adapted bullet point 3]\n\n**[Recent Job Title 2] | [Company 2]** | *[Dates 2]*\n* [Adapted bullet point 1]\n* [Adapted bullet point 2]\n\n[Include the 3rd job with bullet points ONLY if applicable, otherwise move to Older Jobs format below]\n\n**[Older Job Title 3+] | [Older Company]** | *[Older Dates]*\n**[Older Job Title 4+] | [Older Company]** | *[Older Dates]*"
             }
           ]
         },
@@ -206,139 +124,231 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        976,
-        880
+        -640,
+        1888
       ],
-      "id": "c5f37eeb-3d28-498e-a5cc-47fc64eacba3",
-      "name": "CV GENERATION SUMMARY",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "maxTries": 5
+      "id": "e2820faf-b876-4416-bdf2-bdc4fdbffcd8",
+      "name": "CV GENERATION EXPRERIENCE1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Mj9DKEcV4Is3LYzI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "models/gemini-3.1-flash-lite-preview",
-          "mode": "list",
-          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=# System Instructions: Senior Technical Recruiter (Israel)\n\n**Goal:** Rewrite ONLY the Skills section of the Base Resume using facts from Work Context, aligned with the Target JD.\n\n**Strict Rules:**\n1. Use ONLY technologies present in Work Context.\n2. You MAY add specific libraries from JD that complement existing stack.\n3. NO NEW core technologies not present in Work Context.\n4. Maximum 6 categories.\n5. Each line format: \"Category Name: skill1, skill2, skill3\"\n\n**Context Inputs:**\n- Base Resume: {{ $('base-cv').item.json.content }}\n- Work Context: {{ $('work-tasks').item.json.content }}\n- Target JD: {{ $('vacancy-about').item.json['Vacancy desc'] }}\n- Generated Experience: {{ $json.content.parts[0].text }}\n\n## Output Format (STRICT):\nCategory Name: skill1, skill2, skill3\nCategory Name: skill1, skill2, skill3\n\n## Critical Output Rules:\n- Output ONLY plain text lines, one category per line. No JSON. No bullets. No headers. No explanation.\n- Do NOT escape characters like \\n, \\*, \\\".\n- Start directly with the first category line.\n- End after the last category line."
-            }
-          ]
-        },
-        "jsonOutput": true,
-        "builtInTools": {},
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.googleGemini",
-      "typeVersion": 1.1,
-      "position": [
-        672,
-        880
-      ],
-      "id": "4c075def-52bc-4163-aa90-07be84868b4d",
-      "name": "CV GENERATION SKILLS",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "maxTries": 5
-    },
-    {
-      "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "models/gemini-3.1-flash-lite-preview",
-          "mode": "list",
-          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=# System Instructions: Senior Technical Recruiter (Israel)\n\n**Goal:** Rewrite ONLY the Experience section of the Base Resume using facts from Work Context, aligned with the Target JD.\n\n**Strict Rules:**\n1. Use ONLY real tasks and achievements from Work Context. Do not invent facts.\n2. NO NEW core technologies (React, Python, AWS etc.) unless present in Work Context.\n3. You MAY reference specific libraries from JD if they complement existing stack.\n4. Keep EXACT number of bullet points per company as in Base Resume.\n5. Bold technologies and measurable results using **text**.\n6. Integrate JD keywords into descriptions without inventing new facts.\n\n**Context Inputs:**\n- Base Resume: {{ $('base-cv').item.json.content }}\n- Work Context: {{ $('work-tasks').item.json.content }}\n- Target JD: {{ $('vacancy-about').item.json['Vacancy desc'] }}\n\n## Output Format (STRICT):\nOutput a JSON array. Each object must have exactly these fields:\n- \"company\" \u2014 job title and company name\n- \"dates\" \u2014 employment dates\n- \"experience\" \u2014 array of bullet point strings\n\nExample:\n[\n  {\n    \"company\": \"Job Title | Company Name\",\n    \"dates\": \"MM/YYYY \u2013 MM/YYYY\",\n    \"experience\": [\n      \"Bullet point 1 with **bolded** technologies\",\n      \"Bullet point 2 with **measurable result**\"\n    ]\n  }\n]\n\n## Critical Output Rules:\n- Output ONLY the JSON array. No explanation. No preamble. No markdown blocks.\n- Field names must be exactly: \"company\", \"dates\", \"experience\"\n- Start directly with [\n- End with ]"
-            }
-          ]
-        },
-        "jsonOutput": true,
-        "builtInTools": {},
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.googleGemini",
-      "typeVersion": 1.1,
-      "position": [
-        384,
-        880
-      ],
-      "id": "45bf3b69-374a-4f67-8b16-7ba992c64600",
-      "name": "CV GENERATION EXPRERIENCE"
-    },
-    {
-      "parameters": {
-        "jsCode": "// \u0414\u043e\u0441\u0442\u0430\u0451\u043c \u0441\u044b\u0440\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435 \u0438\u0437 \u043d\u043e\u0434\nconst experienceRaw = $('CV GENERATION EXPRERIENCE').first().json.content.parts[0].text //\u2190 \u0442\u0435\u043a\u0441\u0442 \u0438\u0437 \u043d\u043e\u0434\u044b Experience\nconst skillsRaw = $('CV GENERATION SKILLS').first().json.content.parts[0].text    // \u2190 \u0442\u0435\u043a\u0441\u0442 \u0438\u0437 \u043d\u043e\u0434\u044b Skills  \nconst summaryRaw = $input.first().json.content.parts[0].text   // \u2190 \u0442\u0435\u043a\u0441\u0442 \u0438\u0437 \u043d\u043e\u0434\u044b Summary\nconst baseCv = $('base-cv').first().json.content       // \u2190 \u0442\u0435\u043a\u0441\u0442 \u0438\u0437 \u043d\u043e\u0434\u044b Base CV (\u0434\u043b\u044f \u0438\u043c\u0435\u043d\u0438, \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u043e\u0432, education, languages)\n\n// \u2500\u2500 \u041f\u0430\u0440\u0441\u0438\u043c Experience \u2500\u2500\n// \u0424\u043e\u0440\u043c\u0430\u0442: \"Company | Dates\\n* bullet\\n* bullet\"\nfunction parseExperience(raw) {\n  // \u0423\u0431\u0438\u0440\u0430\u0435\u043c \u044d\u043a\u0440\u0430\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 \u0435\u0441\u043b\u0438 \u0441\u0442\u0440\u043e\u043a\u0430 \u043f\u0440\u0438\u0448\u043b\u0430 \u043a\u0430\u043a JSON-\u0441\u0442\u0440\u043e\u043a\u0430\n  let text = raw.trim();\n  if (text.startsWith('\"')) {\n    try { text = JSON.parse(text); } catch(e) {}\n  }\n  \n  // \u041f\u0430\u0440\u0441\u0438\u043c JSON \u043c\u0430\u0441\u0441\u0438\u0432\n  let jobs;\n  try {\n    jobs = JSON.parse(text);\n  } catch(e) {\n    // Fallback \u2014 \u0441\u0442\u0430\u0440\u044b\u0439 plain text \u043f\u0430\u0440\u0441\u0435\u0440\n    return text.trim().split(/\\n\\n+/).map(job => {\n      const lines = job.trim().split('\\n');\n      const header = lines[0].trim();\n      const bullets = lines\n        .slice(1)\n        .filter(l => l.trim().startsWith('*') || l.trim().startsWith('-'))\n        .map(l => `* ${l.replace(/^[\\*\\-]\\s*/, '').trim()}`);\n      return `**${header}**\\n${bullets.join('\\n')}`;\n    }).join('\\n\\n');\n  }\n\n  return jobs.map(job => {\n    const header = `${job.company} | ${job.dates}`;\n    const bullets = job.experience.map(b => `* ${b}`);\n    return `**${header}**\\n${bullets.join('\\n')}`;\n  }).join('\\n\\n');\n}\n\n\n// \u2500\u2500 \u041f\u0430\u0440\u0441\u0438\u043c Skills \u2500\u2500\n// \u0424\u043e\u0440\u043c\u0430\u0442: \"Category: skill1, skill2\"\nfunction parseSkills(raw) {\n  let text = cleanRaw(raw);\n  \n  // \u041f\u0440\u043e\u0431\u0443\u0435\u043c \u043f\u0430\u0440\u0441\u0438\u0442\u044c \u043a\u0430\u043a JSON \u043c\u0430\u0441\u0441\u0438\u0432\n  try {\n    const arr = JSON.parse(text);\n    if (Array.isArray(arr)) {\n      return arr.map(l => {\n        const [category, ...rest] = l.split(':');\n        return `**${category.trim()}:** ${rest.join(':').trim()}`;\n      }).join('\\n');\n    }\n  } catch(e) {}\n\n  // Fallback \u2014 plain text\n  return text.split('\\n')\n    .filter(l => l.includes(':'))\n    .map(l => {\n      const [category, ...rest] = l.split(':');\n      return `**${category.trim()}:** ${rest.join(':').trim()}`;\n    })\n    .join('\\n');\n}\n\n// \u2500\u2500 \u0414\u043e\u0441\u0442\u0430\u0451\u043c Education \u0438 Languages \u0438\u0437 Base CV \u2500\u2500\nfunction extractSection(text, sectionName) {\n  const regex = new RegExp(`###\\\\s*${sectionName}\\\\s*\\\\n([\\\\s\\\\S]*?)(?=###|$)`, 'i');\n  const match = text.match(regex);\n  return match ? match[1].trim() : '';\n}\n\nfunction extractHeader(text) {\n  // \u0411\u0435\u0440\u0451\u043c \u043f\u0435\u0440\u0432\u044b\u0435 \u0434\u0432\u0435 \u0441\u0442\u0440\u043e\u043a\u0438 \u2014 \u0438\u043c\u044f \u0438 \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u044b\n  const lines = text.trim().split('\\n');\n  const nameLine = lines.find(l => l.startsWith('#')) || lines[0];\n  const contactLine = lines.find(l => l.includes('@') || l.includes('+')) || '';\n  return { name: nameLine.replace(/^#+\\s*/, '').trim(), contacts: contactLine.trim() };\n}\n\nfunction cleanRaw(raw) {\n  return raw\n    .trim()\n    .replace(/^\"+|\"+$/g, '')       // \u043a\u0430\u0432\u044b\u0447\u043a\u0438 \u0432 \u043d\u0430\u0447\u0430\u043b\u0435 \u0438 \u043a\u043e\u043d\u0446\u0435\n    .replace(/\\\\n/g, '\\n')         // \u044d\u043a\u0440\u0430\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u044b\n    .replace(/\\\\\"/g, '\"')          // \u044d\u043a\u0440\u0430\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u043a\u0430\u0432\u044b\u0447\u043a\u0438\n    .replace(/\\\\u2013/g, '\u2013')      // \u044d\u043a\u0440\u0430\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0442\u0438\u0440\u0435\n    .trim();\n}\n\nfunction cleanSummary(raw) {\n  let text = cleanRaw(raw);\n  \n  // \u041f\u0440\u043e\u0431\u0443\u0435\u043c \u043f\u0430\u0440\u0441\u0438\u0442\u044c \u043a\u0430\u043a JSON\n  try {\n    const parsed = JSON.parse(text);\n    // \u041e\u0431\u044a\u0435\u043a\u0442 \u0441 \u043f\u043e\u043b\u0435\u043c summary\n    if (parsed?.summary) return parsed.summary.trim();\n    if (parsed?.Summary) return parsed.Summary.trim();\n    // \u041c\u0430\u0441\u0441\u0438\u0432 \u2014 \u0431\u0435\u0440\u0451\u043c \u043f\u0435\u0440\u0432\u044b\u0439 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\n    if (Array.isArray(parsed)) return parsed[0]?.summary || parsed[0]?.text || parsed[0] || text;\n  } catch(e) {}\n\n  return text.trim();\n}\n\nconst experience = parseExperience(experienceRaw);\nconst skills = parseSkills(cleanRaw(skillsRaw));\nconst summary = cleanSummary(summaryRaw).trim();\nconst education = extractSection(baseCv, 'Education');\nconst languages = extractSection(baseCv, 'Languages');\nconst { name, contacts } = extractHeader(baseCv);\n\n// \u2500\u2500 \u0421\u043e\u0431\u0438\u0440\u0430\u0435\u043c \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439 Markdown \u2500\u2500\nconst markdown = `# ${name}\n**${contacts}**\n\n---\n\n### Summary\n${summary}\n\n### Skills\n${skills}\n\n### Experience\n${experience}\n\n### Education\n${education}\n\n### Languages\n${languages}`;\n\n// \u2500\u2500 \u041a\u043e\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u0443\u0435\u043c Markdown \u0432 HTML \u2500\u2500\nfunction markdownToHtml(md) {\n  const lines = md.split(/\\r?\\n/);\n  const html = [];\n  let inList = false;\n\n  for (let line of lines) {\n    line = line.trim();\n\n    if (!line) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      continue;\n    }\n\n    line = line\n      .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n      .replace(/\\*(.*?)\\*/g, '<em>$1</em>')\n      .replace(/\\[(.*?)\\]\\((.*?)\\)/g, '<a target=\"_blank\" href=\"$2\">$1</a>');\n\n    if (line.startsWith('### ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h3>${line.substring(4)}</h3>`);\n    } else if (line.startsWith('## ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h2>${line.substring(3)}</h2>`);\n    } else if (line.startsWith('# ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h1>${line.substring(2)}</h1>`);\n    } else if (line === '---') {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push('<hr>');\n    } else if (line.startsWith('* ') || line.startsWith('- ')) {\n      if (!inList) { html.push('<ul>'); inList = true; }\n      html.push(`<li>${line.substring(2)}</li>`);\n    } else {\n      if (inList) { html.push('</ul>'); inList = false; }\n      if (html.length > 0 && html[html.length - 1].startsWith('<h1>')) {\n        html.push(`<p class=\"contact-info\">${line}</p>`);\n      } else {\n        html.push(`<p>${line}</p>`);\n      }\n    }\n  }\n\n  if (inList) html.push('</ul>');\n  return html.join('\\n');\n}\n\nconst htmlString = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Arial, Helvetica, sans-serif; line-height: 1.4; color: #222; margin: 40px; font-size: 13px; }\n    h1 { text-align: center; margin: 0 0 5px 0; color: #000; font-size: 24px; letter-spacing: 0.5px; }\n    .contact-info { text-align: center; font-size: 12px; color: #444; margin: 0 0 15px 0; }\n    hr { border: none; border-top: 1px solid #ddd; margin: 15px 0; }\n    h3 { border-bottom: 1px solid #333; padding-bottom: 2px; margin-top: 15px; margin-bottom: 8px; font-size: 14px; text-transform: uppercase; color: #111; }\n    p { margin: 4px 0; }\n    ul { margin: 4px 0 10px 0; padding-left: 20px; }\n    li { margin-bottom: 4px; }\n    a { color: #0056b3; text-decoration: none; }\n    strong { color: #000; font-weight: 600; }\n  </style>\n</head>\n<body>\n${markdownToHtml(markdown)}\n</body>\n</html>`;\n\nconst binaryData = Buffer.from(htmlString, 'utf-8');\n\nreturn [{\n  json: { filename: 'resume.html' },\n  binary: {\n    data: await this.helpers.prepareBinaryData(binaryData, 'index.html', 'text/html')\n  }\n}];"
+        "jsCode": "// 1. \u0414\u043e\u0441\u0442\u0430\u0451\u043c \u0441\u044b\u0440\u043e\u0439 \u043e\u0442\u0432\u0435\u0442\nlet rawOutput = $input.first().json?.content?.parts?.[0]?.text \n             || $input.first().json?.text \n             || $input.first().json?.message?.content \n             || \"\";\n\nrawOutput = rawOutput.replace(/^```(json|markdown|text)?/im, '').replace(/```$/m, '').trim();\n\nlet megaCvMarkdown = \"\";\n\n// 2. \u0423\u0411\u0415\u0420-\u041f\u0410\u0420\u0421\u0415\u0420: \u0418\u0449\u0435\u0442 JSON \u0434\u0430\u0436\u0435 \u0435\u0441\u043b\u0438 \u043e\u043d \u0432\u043d\u0443\u0442\u0440\u0438 \u043c\u0430\u0441\u0441\u0438\u0432\u0430 \u0438\u043b\u0438 \u0442\u0435\u043a\u0441\u0442\u0430\nconst jsonMatch = rawOutput.match(/(\\[[\\s\\S]*\\])|(\\{[\\s\\S]*\\})/); \nlet isJsonParsed = false;\n\nif (jsonMatch) {\n  try {\n    let parsed = JSON.parse(jsonMatch[0]);\n    \n    // \u0415\u0441\u043b\u0438 \u0418\u0418 \u043e\u0431\u0435\u0440\u043d\u0443\u043b \u0432\u0441\u0451 \u0432 \u043c\u0430\u0441\u0441\u0438\u0432 [ { ... } ], \u0434\u043e\u0441\u0442\u0430\u0435\u043c \u043f\u0435\u0440\u0432\u044b\u0439 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\n    if (Array.isArray(parsed)) {\n      parsed = parsed[0];\n    }\n\n    // \u0412\u0441\u043f\u043e\u043c\u043e\u0433\u0430\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0444\u0443\u043d\u043a\u0446\u0438\u044f: \u0438\u0449\u0435\u0442 \u043a\u043b\u044e\u0447 \u043d\u0435\u0437\u0430\u0432\u0438\u0441\u0438\u043c\u043e \u043e\u0442 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430 (summary == Summary == SUMMARY)\n    const getVal = (obj, keyName) => {\n      if (!obj || typeof obj !== 'object') return null;\n      const key = Object.keys(obj).find(k => k.toLowerCase() === keyName.toLowerCase());\n      return key ? obj[key] : null;\n    };\n\n    const summary = getVal(parsed, 'summary');\n    const skills = getVal(parsed, 'skills');\n    const experience = getVal(parsed, 'experience');\n    \n    // \u0415\u0441\u043b\u0438 \u043d\u0430\u0448\u043b\u0438 \u0445\u043e\u0442\u044f \u0431\u044b \u043e\u0434\u0438\u043d \u043d\u0443\u0436\u043d\u044b\u0439 \u0431\u043b\u043e\u043a, \u0441\u043e\u0431\u0438\u0440\u0430\u0435\u043c Markdown\n    if (summary || experience) {\n      let builtMd = `### Summary\\n${summary || ''}\\n\\n### Skills\\n`;\n      \n      if (skills) {\n        for (const [key, value] of Object.entries(skills)) {\n          // \u0415\u0441\u043b\u0438 \u0418\u0418 \u043f\u0440\u0438\u0441\u043b\u0430\u043b \u043a\u043b\u044e\u0447\u0438 \u0441 \u043d\u0438\u0436\u043d\u0438\u043c \u043f\u043e\u0434\u0447\u0435\u0440\u043a\u0438\u0432\u0430\u043d\u0438\u0435\u043c - \u0434\u0435\u043b\u0430\u0435\u043c \u043a\u0440\u0430\u0441\u0438\u0432\u043e. \u0415\u0441\u043b\u0438 \u043e\u0431\u044b\u0447\u043d\u044b\u0439 \u0442\u0435\u043a\u0441\u0442 - \u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u043c.\n          let cleanKey = key.includes('_') \n            ? key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ').replace(' And ', ' & ')\n            : key;\n          builtMd += `**${cleanKey}:** ${value}\\n`;\n        }\n      }\n      \n      builtMd += `\\n### Experience\\n\\n`;\n      if (experience && Array.isArray(experience)) {\n        experience.forEach(job => {\n          // \u0414\u043e\u0441\u0442\u0430\u0435\u043c \u043f\u043e\u043b\u044f \u043a\u0430\u043a \u0431\u044b \u0418\u0418 \u0438\u0445 \u043d\u0438 \u043d\u0430\u0437\u0432\u0430\u043b\n          const title = getVal(job, 'title') || getVal(job, 'role') || '';\n          const company = getVal(job, 'company') || '';\n          const dates = getVal(job, 'dates') || '';\n\n          // \u0417\u0430\u0449\u0438\u0442\u0430 \u043e\u0442 \u0441\u043a\u043b\u0435\u0438\u0432\u0430\u043d\u0438\u044f (\u0435\u0441\u043b\u0438 \u0418\u0418 \u0437\u0430\u0441\u0443\u043d\u0443\u043b \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u044e \u0432 \u043f\u043e\u043b\u0435 Role)\n          let header = title;\n          if (company && !title.includes(company)) {\n            header += ` | ${company}`;\n          }\n\n          builtMd += `**${header}** | *${dates}*\\n`;\n          \n          const bullets = getVal(job, 'bullets') || getVal(job, 'experience') || [];\n          if (Array.isArray(bullets)) {\n            bullets.forEach(b => builtMd += `* ${b.replace(/\\n/g, ' ').trim()}\\n`);\n          }\n          builtMd += `\\n`;\n        });\n      }\n      \n      megaCvMarkdown = builtMd.trim();\n      isJsonParsed = true;\n    }\n  } catch (e) {\n    // \u0415\u0441\u043b\u0438 JSON \u0431\u0438\u0442\u044b\u0439, \u043c\u043e\u043b\u0447\u0430 \u043f\u0430\u0434\u0430\u0435\u043c \u0432 \u0437\u0430\u043f\u0430\u0441\u043d\u043e\u0439 \u0432\u0430\u0440\u0438\u0430\u043d\u0442 (\u043f\u0430\u0440\u0441\u0438\u043d\u0433 \u0442\u0435\u043a\u0441\u0442\u0430)\n  }\n}\n\n// 3. \u0417\u0430\u043f\u0430\u0441\u043d\u043e\u0439 \u0432\u0430\u0440\u0438\u0430\u043d\u0442 (\u0435\u0441\u043b\u0438 \u043f\u0440\u0438\u0448\u0435\u043b \u0447\u0438\u0441\u0442\u044b\u0439 \u0442\u0435\u043a\u0441\u0442 \u0431\u0435\u0437 JSON)\nif (!isJsonParsed) {\n  megaCvMarkdown = rawOutput.split(/(###\\s*(Education|Languages)|EDUCATION\\n)/i)[0].trim();\n}\n\n// 4. \u0414\u043e\u0441\u0442\u0430\u0435\u043c Base CV \u0434\u043b\u044f \u0441\u0442\u0430\u0442\u0438\u043a\u0438 (\u0438 \u0434\u0430\u043b\u0435\u0435 \u043f\u043e \u0442\u0435\u043a\u0441\u0442\u0443 \u0432\u0430\u0448\u0435\u0433\u043e \u0441\u043a\u0440\u0438\u043f\u0442\u0430...)\nconst baseCv = $('cv-generation-start').first().json.body.baseCv;\n\nfunction extractSection(text, sectionName) {\n  const regex = new RegExp(`###\\\\s*${sectionName}\\\\s*\\\\n([\\\\s\\\\S]*?)(?=###|$)`, 'i');\n  const match = text.match(regex);\n  return match ? match[1].trim() : '';\n}\n\nfunction extractHeader(text) {\n  const lines = text.trim().split('\\n');\n  const nameLine = lines.find(l => l.startsWith('#')) || lines[0];\n  const contactLine = lines.find(l => l.includes('@') || l.includes('+')) || '';\n  return { \n    name: nameLine.replace(/^#+\\s*/, '').trim(), \n    contacts: contactLine.trim() \n  };\n}\n\nconst education = extractSection(baseCv, 'Education');\nconst languages = extractSection(baseCv, 'Languages');\nconst { name, contacts } = extractHeader(baseCv);\n\n// 5. \u0421\u043e\u0431\u0438\u0440\u0430\u0435\u043c \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\nconst finalMarkdown = `# ${name}\n**${contacts}**\n\n---\n\n${megaCvMarkdown}\n\n### Education\n${education}\n\n### Languages\n${languages}`;\n\n// 6. \u041a\u043e\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u0443\u0435\u043c Markdown \u0432 HTML\nfunction markdownToHtml(md) {\n  const lines = md.split(/\\r?\\n/);\n  const html = [];\n  let inList = false;\n\n  for (let line of lines) {\n    line = line.trim();\n\n    if (!line) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      continue;\n    }\n\n    line = line\n      .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n      .replace(/\\*(.*?)\\*/g, '<em>$1</em>')\n      .replace(/\\[(.*?)\\]\\((.*?)\\)/g, '<a target=\"_blank\" href=\"$2\">$1</a>');\n\n    if (line.startsWith('### ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h3>${line.substring(4)}</h3>`);\n    } else if (line.startsWith('## ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h2>${line.substring(3)}</h2>`);\n    } else if (line.startsWith('# ')) {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push(`<h1>${line.substring(2)}</h1>`);\n    } else if (line === '---') {\n      if (inList) { html.push('</ul>'); inList = false; }\n      html.push('<hr>');\n    } else if (line.startsWith('* ') || line.startsWith('- ')) {\n      if (!inList) { html.push('<ul>'); inList = true; }\n      html.push(`<li>${line.substring(2)}</li>`);\n    } else {\n      if (inList) { html.push('</ul>'); inList = false; }\n      if (html.length > 0 && html[html.length - 1].startsWith('<h1>')) {\n        html.push(`<p class=\"contact-info\">${line}</p>`);\n      } else {\n        html.push(`<p>${line}</p>`);\n      }\n    }\n  }\n\n  if (inList) html.push('</ul>');\n  return html.join('\\n');\n}\n\n// 7. \u0424\u043e\u0440\u043c\u0438\u0440\u0443\u0435\u043c HTML \u0438 \u0431\u0438\u043d\u0430\u0440\u043d\u0438\u043a\nconst htmlString = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n<style>\n    /* \u0423\u043c\u0435\u043d\u044c\u0448\u0438\u043b\u0438 \u0442\u043e\u043b\u044c\u043a\u043e font-size, \u043e\u0442\u0441\u0442\u0443\u043f\u044b (margin) \u0438 \u0438\u043d\u0442\u0435\u0440\u0432\u0430\u043b\u044b (line-height) \u043e\u0441\u0442\u0430\u043b\u0438\u0441\u044c \u043e\u0440\u0438\u0433\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u043c\u0438 */\n    body { font-family: Arial, Helvetica, sans-serif; line-height: 1.4; color: #222; margin: 40px; font-size: 11.5px; } /* \u0411\u044b\u043b\u043e 13px */\n    h1 { text-align: center; margin: 0 0 5px 0; color: #000; font-size: 22px; letter-spacing: 0.5px; } /* \u0411\u044b\u043b\u043e 24px */\n    .contact-info { text-align: center; font-size: 11px; color: #444; margin: 0 0 15px 0; } /* \u0411\u044b\u043b\u043e 12px */\n    hr { border: none; border-top: 1px solid #ddd; margin: 15px 0; }\n    h3 { border-bottom: 1px solid #333; padding-bottom: 2px; margin-top: 15px; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; color: #111; } /* \u0411\u044b\u043b\u043e 14px */\n    p { margin: 4px 0; }\n    ul { margin: 4px 0 10px 0; padding-left: 20px; }\n    li { margin-bottom: 4px; }\n    a { color: #0056b3; text-decoration: none; }\n    strong { color: #000; font-weight: 600; }\n  </style>\n</head>\n<body>\n${markdownToHtml(finalMarkdown)}\n</body>\n</html>`;\n\nconst binaryData = Buffer.from(htmlString, 'utf-8');\n\nreturn [{\n  json: { filename: 'resume.html' },\n  binary: {\n    data: await this.helpers.prepareBinaryData(binaryData, 'index.html', 'text/html')\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        432,
-        656
+        -176,
+        1616
       ],
-      "id": "3d0285dd-a68b-4f41-8ba4-03b3098d05e0",
-      "name": "make-final-cv"
+      "id": "865443c7-a6a5-436d-9fbe-d7fba5530e2c",
+      "name": "make-final-cv-html1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://gotenberg:3000/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "index.html",
+              "value": "data"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "index.html",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "file",
+              "outputPropertyName": "cv"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        112,
+        1616
+      ],
+      "id": "41e152f5-df2f-413e-9f9f-fa021947615a",
+      "name": "make-final-cv-pdf2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=# System Instructions: Tech Networking Expert (Israel)\n\n**Goal:** Write a brief, engaging Personal Note (Introductory Message) for Maxim Krendel targeting a specific company and vacancy. \n\n**Strict Rules:**\n1. **Core Message:** The vibe must be simple and direct: \"Your product/role is interesting, my tech stack matches perfectly, I have relevant background, let's chat.\" Do not over-analyze the JD.\n2. **Length:** Extremely concise. Maximum 3-4 sentences (50-75 words). \n3. **Style & Tone:** \"Israeli High-Tech\" (Tachles) \u2014 friendly, professional, confident, zero corporate fluff. \n4. **Key Elements to Include:**\n   - The target company name.\n   - A quick nod to the stack match (Select 1-2 core technologies from the JD that match the Refined Resume).\n   - A brief mention of experience with \"data-heavy / high-load systems\".\n   - A quick drop of BGU (B.Sc. Information Systems).\n5. **Zero Hallucination:** Do not invent metrics or facts.\n\n**Context Inputs:**\n- Refined Resume: {{ $json.content.parts[0].text }}\n- Target JD: {{ $('cv-generation-start').item.json.body.vacancy }}\n\n## Output Format (STRICT):\nOutput a SINGLE PARAGRAPH of plain text. \n\n**CRITICAL FORMATTING FAILURES (DO NOT DO THIS):**\n- ABSOLUTELY NO JSON. \n- Do NOT output curly braces `{}`.\n- Do NOT output key-value pairs (e.g., \"message\": \"...\").\n- Do NOT wrap the text in markdown code blocks (```).\n- Do NOT add a signature (\"Best, Maxim\").\n\n**REQUIRED TEMPLATE:**\nStart exactly with: \"Hi [Company Name] team, \"\nFollow with 2-3 sentences of content.\nEnd exactly with: \" Would love to connect and discuss.\""
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        2160
+      ],
+      "id": "89d41d06-38e2-4fdb-9209-968febfda930",
+      "name": "PERSONAL NOTE GENERATION",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Mj9DKEcV4Is3LYzI",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. \u0414\u043e\u0441\u0442\u0430\u0435\u043c \u0441\u044b\u0440\u043e\u0439 \u0442\u0435\u043a\u0441\u0442 (\u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 \u0440\u0430\u0437\u043d\u044b\u0435 \u0444\u043e\u0440\u043c\u0430\u0442\u044b \u0432\u044b\u0445\u043e\u0434\u0430 AI-\u043d\u043e\u0434)\nconst rawText = $input.first().json?.content?.parts?.[0]?.text \n             || $input.first().json?.text \n             || $input.first().json?.message?.content \n             || $input.first().json?.content\n             || JSON.stringify($input.first().json);\n\nif (!rawText) {\n  return [{ json: { personal_note: \"\u041e\u0448\u0438\u0431\u043a\u0430: \u043f\u043e\u043b\u0443\u0447\u0435\u043d \u043f\u0443\u0441\u0442\u043e\u0439 \u043e\u0442\u0432\u0435\u0442\" } }];\n}\n\n// 2. \u0421\u0447\u0438\u0449\u0430\u0435\u043c \u043c\u0443\u0441\u043e\u0440, \u0435\u0441\u043b\u0438 \u0418\u0418 \u043e\u0431\u0435\u0440\u043d\u0443\u043b \u043e\u0442\u0432\u0435\u0442 \u0432 markdown-\u0431\u043b\u043e\u043a\u0438\nconst cleanText = rawText.replace(/^```(json|text|markdown)?/im, '').replace(/```$/m, '').trim();\n\nlet finalMessage = \"\";\n\n// 3. \u041f\u044b\u0442\u0430\u0435\u043c\u0441\u044f \u043f\u043e\u043d\u044f\u0442\u044c, JSON \u044d\u0442\u043e \u0438\u043b\u0438 \u043e\u0431\u044b\u0447\u043d\u044b\u0439 \u0442\u0435\u043a\u0441\u0442\ntry {\n  const parsedData = JSON.parse(cleanText);\n  \n  // \u0420\u0435\u043a\u0443\u0440\u0441\u0438\u0432\u043d\u044b\u0439 \u044d\u043a\u0441\u0442\u0440\u0430\u043a\u0442\u043e\u0440: \u043f\u0440\u043e\u0431\u0438\u0432\u0430\u0435\u0442 \u043c\u0430\u0441\u0441\u0438\u0432\u044b \u0438 \u043e\u0431\u044a\u0435\u043a\u0442\u044b \u0434\u043e \u0441\u0430\u043c\u043e\u0439 \u0441\u0442\u0440\u043e\u043a\u0438\n  function extractString(data) {\n    if (typeof data === 'string') return data;\n    if (Array.isArray(data)) return extractString(data[0]); // \u0411\u0435\u0440\u0435\u043c \u043f\u0435\u0440\u0432\u044b\u0439 \u044d\u043b\u0435\u043c\u0435\u043d\u0442 \u043c\u0430\u0441\u0441\u0438\u0432\u0430\n    if (typeof data === 'object' && data !== null) {\n      // \u0418\u0449\u0435\u043c \u043f\u043e\u043f\u0443\u043b\u044f\u0440\u043d\u044b\u0435 \u043a\u043b\u044e\u0447\u0438, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043b\u044e\u0431\u0438\u0442 \u0432\u044b\u0434\u0443\u043c\u044b\u0432\u0430\u0442\u044c \u0418\u0418\n      if (data.message) return extractString(data.message);\n      if (data.note) return extractString(data.note);\n      if (data.text) return extractString(data.text);\n      \n      // \u0415\u0441\u043b\u0438 \u043a\u043b\u044e\u0447\u0438 \u0434\u0440\u0443\u0433\u0438\u0435, \u043f\u0440\u043e\u0441\u0442\u043e \u0431\u0435\u0440\u0435\u043c \u043f\u0435\u0440\u0432\u043e\u0435 \u043f\u043e\u043f\u0430\u0432\u0448\u0435\u0435\u0441\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435\n      return extractString(Object.values(data)[0]);\n    }\n    return String(data || '');\n  }\n\n  finalMessage = extractString(parsedData);\n\n} catch (e) {\n  // \u0415\u0441\u043b\u0438 JSON.parse \u0432\u044b\u0434\u0430\u043b \u043e\u0448\u0438\u0431\u043a\u0443, \u0437\u043d\u0430\u0447\u0438\u0442 \u0418\u0418 \u043f\u043e\u0441\u043b\u0443\u0448\u0430\u043b\u0441\u044f \u0438 \u0432\u044b\u0434\u0430\u043b \u0447\u0438\u0441\u0442\u044b\u0439 \u0442\u0435\u043a\u0441\u0442!\n  finalMessage = cleanText;\n}\n\n// 4. \u041e\u0442\u0434\u0430\u0435\u043c \u0447\u0438\u0441\u0442\u0443\u044e \u0441\u0442\u0440\u043e\u043a\u0443 \u0432 \u0443\u0434\u043e\u0431\u043d\u043e\u043c \u043a\u043b\u044e\u0447\u0435 \u0434\u043b\u044f \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u0438 \u043d\u0430 \u0432\u0430\u0448 \u0431\u044d\u043a\u0435\u043d\u0434\nreturn [{\n  json: {\n    personal_note: finalMessage.trim()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        2160
+      ],
+      "id": "83fffbf3-b181-4e86-bddd-ac0abdc87f74",
+      "name": "make-personal-note"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        1872
+      ],
+      "id": "fcb4ec7b-b867-4917-94a2-3382b2d8e6fe",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://api:3001/api/v1/applications/{{$('cv-generation-start').item.json.body.ticketId}}/result",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"x-app-secret\":\"change-me-backend-secret\"\n}",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "cv",
+              "inputDataFieldName": "cv"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "coverLetter",
+              "inputDataFieldName": "coverLetter"
+            },
+            {
+              "name": "personalNote",
+              "value": "={{ $json.personal_note }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "file",
+              "outputPropertyName": "cv"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        928,
+        1888
+      ],
+      "id": "596e5688-327e-4b8a-a08f-9ef134d936c0",
+      "name": "make-final-cv-pdf"
     }
   ],
-  "pinData": {},
   "connections": {
-    "work-tasks": {
+    "cv-generation-start": {
       "main": [
         [
           {
-            "node": "about-company",
+            "node": "CV GENERATION EXPRERIENCE1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "base-cv": {
+    "COVER LETTER GENERATION": {
       "main": [
         [
           {
-            "node": "work-tasks",
+            "node": "make-cover-letter-html",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "vacancy-about": {
+    "make-cover-letter-html": {
       "main": [
         [
           {
-            "node": "base-cv",
+            "node": "make-cover-letter-pdf",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "about-company": {
+    "make-cover-letter-pdf": {
       "main": [
         [
           {
-            "node": "clean-text-about-company",
+            "node": "Merge",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
     },
-    "clean-text-about-company": {
+    "CV GENERATION EXPRERIENCE1": {
       "main": [
         [
           {
-            "node": "PERSONAL NOTE GENERATION",
+            "node": "make-final-cv-html1",
             "type": "main",
             "index": 0
           },
@@ -348,56 +358,62 @@
             "index": 0
           },
           {
-            "node": "CV GENERATION EXPRERIENCE",
+            "node": "PERSONAL NOTE GENERATION",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
-      "main": [
-        []
-      ]
-    },
-    "CV GENERATION SUMMARY": {
+    "make-final-cv-html1": {
       "main": [
         [
           {
-            "node": "make-final-cv",
+            "node": "make-final-cv-pdf2",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "CV GENERATION EXPRERIENCE": {
+    "PERSONAL NOTE GENERATION": {
       "main": [
         [
           {
-            "node": "CV GENERATION SKILLS",
+            "node": "make-personal-note",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "CV GENERATION SKILLS": {
+    "make-personal-note": {
       "main": [
         [
           {
-            "node": "CV GENERATION SUMMARY",
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "make-final-cv-pdf2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "make-final-cv": {
+    "Merge": {
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "make-final-cv-pdf",
             "type": "main",
             "index": 0
           }
@@ -405,17 +421,11 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
-  },
-  "versionId": "77fec9ba-7d06-4560-83f5-292d0e7c137a",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "a5c98703c710d3f5333caaa111eceb17248ab0eac5840cc81de175205b80f61c"
-  },
-  "id": "42klPmzl86t9aBaA",
-  "tags": []
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  }
 }
