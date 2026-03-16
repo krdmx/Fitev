@@ -37,7 +37,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:3000').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))"
+          "fetch('http://127.0.0.1:3000').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 15s
       timeout: 5s
@@ -58,13 +58,14 @@ services:
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
       DATABASE_URL: ${DATABASE_URL}
       BACKEND_APP_SECRET: ${BACKEND_APP_SECRET}
+      N8N_WORKFLOW_WEBHOOK_URL: ${N8N_WORKFLOW_WEBHOOK_URL:-http://n8n:5678/webhook/generate-cv}
     healthcheck:
       test:
         [
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:3001/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))"
+          "fetch('http://127.0.0.1:3001/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 15s
       timeout: 5s
@@ -82,10 +83,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""
-        ]
+        ["CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
       interval: 10s
       timeout: 5s
       retries: 10
@@ -95,6 +93,9 @@ services:
       context: .
       dockerfile: infra/n8n/Dockerfile
     restart: unless-stopped
+    depends_on:
+      gotenberg:
+        condition: service_started
     environment:
       NODE_ENV: production
       N8N_HOST: ${N8N_HOST}
@@ -108,6 +109,14 @@ services:
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
       N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE}
       N8N_IMPORT_SEED: ${N8N_IMPORT_SEED}
+      N8N_IMPORT_CREDENTIALS: ${N8N_IMPORT_CREDENTIALS:-true}
+      N8N_GOOGLE_DOCS_CREDENTIAL_NAME: ${N8N_GOOGLE_DOCS_CREDENTIAL_NAME:-Google Docs account}
+      N8N_GOOGLE_SERVICE_ACCOUNT_EMAIL: ${N8N_GOOGLE_SERVICE_ACCOUNT_EMAIL:-}
+      N8N_GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: ${N8N_GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY:-}
+      N8N_GOOGLE_SERVICE_ACCOUNT_IMPERSONATE: ${N8N_GOOGLE_SERVICE_ACCOUNT_IMPERSONATE:-false}
+      N8N_GOOGLE_SERVICE_ACCOUNT_DELEGATED_EMAIL: ${N8N_GOOGLE_SERVICE_ACCOUNT_DELEGATED_EMAIL:-}
+      N8N_GOOGLE_GEMINI_CREDENTIAL_NAME: ${N8N_GOOGLE_GEMINI_CREDENTIAL_NAME:-Google Gemini(PaLM) Api account}
+      N8N_GOOGLE_GEMINI_API_HOST: ${N8N_GOOGLE_GEMINI_API_HOST:-https://generativelanguage.googleapis.com}
       GOOGLE_DOCS_CLIENT_ID: ${GOOGLE_DOCS_CLIENT_ID}
       GOOGLE_DOCS_CLIENT_SECRET: ${GOOGLE_DOCS_CLIENT_SECRET}
       GOOGLE_GEMINI_API_KEY: ${GOOGLE_GEMINI_API_KEY}
@@ -119,7 +128,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:5678').then((response)=>process.exit(response.ok||response.status===401?0:1)).catch(()=>process.exit(1))"
+          "fetch('http://127.0.0.1:5678').then((response)=>process.exit(response.ok||response.status===401?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 15s
       timeout: 5s

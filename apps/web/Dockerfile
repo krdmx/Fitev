@@ -9,8 +9,13 @@ WORKDIR /app
 
 FROM base AS deps
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
 COPY apps/api/package.json apps/api/package.json
+COPY apps/api/prisma apps/api/prisma
 COPY apps/web/package.json apps/web/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/contracts/package.json packages/contracts/package.json
