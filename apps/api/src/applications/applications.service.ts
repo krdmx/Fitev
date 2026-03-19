@@ -1,57 +1,94 @@
 import type {
   ApplicationTicketListItemResponse,
+  ApplicationTicketResultResponse,
   CreateApplicationRequest,
   CreateApplicationResponse,
   GetApplicationsResponse,
   GetApplicationTicketResponse,
   GetBaseCvResponse,
+  GetFullNameResponse,
   GetWorkTasksResponse,
+  UpdateApplicationResultRequest,
   UpdateBaseCvRequest,
+  UpdateFullNameRequest,
   UpdateWorkTasksRequest,
 } from "@repo/contracts";
 import {
   BadGatewayException,
   BadRequestException,
+  HttpStatus,
   Injectable,
+  Logger,
   NotFoundException,
   ServiceUnavailableException,
   UnauthorizedException,
 } from "@nestjs/common";
 
+import { logHttpExchange } from "../logging/http-log.util";
 import { PrismaService } from "../prisma/prisma.service";
 
+const FULL_NAME_KEY = "fullName";
 const BASE_CV_KEY = "baseCv";
 const WORK_TASKS_KEY = "workTasks";
-
-type UploadedApplicationDocument = {
-  buffer: Buffer;
-  mimetype: string;
-  originalname: string;
-};
+const APPLICATION_PIPELINE_MOCK_DELAY_MS = 900;
+const PREVIEW_TEXT_LENGTH = 96;
 
 type SaveApplicationResultInput = {
   ticketId: string;
   appSecret: string | undefined;
-  personalNote: unknown;
-  cv: UploadedApplicationDocument;
-  coverLetter: UploadedApplicationDocument;
+  request: unknown;
 };
+
+type PersistApplicationResultInput = {
+  ticketId: string;
+  personalNote: string;
+  cvMarkdown: string;
+  coverLetterMarkdown: string;
+};
+
+type PipelineDispatchInput = {
+  ticketId: string;
+  companyName: string;
+  fullName: string;
+  vacancyDescription: string;
+  baseCv: string;
+  workTasks: string;
+};
+
+type ApplicationPipelineMode = "live" | "mock";
+
+const CALLBACK_RESULT_FIELDS = [
+  "personalNote",
+  "cvMarkdown",
+  "coverLetterMarkdown",
+] as const;
+const CALLBACK_PAYLOAD_CONTAINER_KEYS = [
+  "body",
+  "request",
+  "result",
+  "data",
+  "payload",
+] as const;
+
+type CallbackResultField = (typeof CALLBACK_RESULT_FIELDS)[number];
 
 @Injectable()
 export class ApplicationsService {
+  private readonly logger = new Logger("HttpLogger");
+
   constructor(private readonly prisma: PrismaService) {}
 
   async createApplication(
     request: CreateApplicationRequest
   ): Promise<CreateApplicationResponse> {
-    const fullName = this.requireText(request?.fullName, "fullName");
+    const companyName = this.requireText(request?.companyName, "companyName");
     const vacancyDescription = this.requireText(
       request?.vacancyDescription,
       "vacancyDescription"
     );
-    const webhookUrl = this.getWebhookUrl();
 
-    const [baseCv, workTasks] = await Promise.all([
+    const [fullName, baseCv, workTasks] = await Promise.all([
+      this.getRequiredProfileText(FULL_NAME_KEY),
       this.getRequiredProfileText(BASE_CV_KEY),
       this.getRequiredProfileText(WORK_TASKS_KEY),
     ]);
@@ -59,39 +96,19 @@ export class ApplicationsService {
     const ticket = await this.prisma.applicationTicket.create({
       data: {
         status: "processing",
-        fullName,
+        companyName,
         vacancyDescription,
       },
     });
 
-    try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          ticketId: ticket.id,
-          fullName,
-          vacancyDescription,
-          baseCv,
-          workTasks,
-        }),
-      });
-
-      if (!response.ok) {
-        const failureMessage = await this.getWebhookFailureMessage(response);
-        await this.markTicketFailed(ticket.id, failureMessage);
-        throw new BadGatewayException(failureMessage);
-      }
-    } catch (error) {
-      if (error instanceof BadGatewayException) {
-        throw error;
-      }
-
-      await this.markTicketFailed(ticket.id, this.getErrorMessage(error));
-      throw new BadGatewayException("Failed to trigger n8n workflow.");
-    }
+    await this.dispatchApplicationPipeline({
+      ticketId: ticket.id,
+      companyName,
+      fullName,
+      vacancyDescription,
+      baseCv,
+      workTasks,
+    });
 
     return {
       ticketId: ticket.id,
@@ -131,33 +148,13 @@ export class ApplicationsService {
     return {
       ticketId: ticket.id,
       status: ticket.status,
-      fullName: ticket.fullName,
+      companyName: ticket.companyName,
       vacancyDescription: ticket.vacancyDescription,
       lastError: ticket.lastError,
       createdAt: ticket.createdAt.toISOString(),
       updatedAt: ticket.updatedAt.toISOString(),
       result: ticket.result
-        ? {
-            personalNote: ticket.result.personalNote,
-            createdAt: ticket.result.createdAt.toISOString(),
-            updatedAt: ticket.result.updatedAt.toISOString(),
-            cv: {
-              fileName: ticket.result.cvFileName,
-              mimeType: ticket.result.cvMimeType,
-              dataUrl: this.toDataUrl(
-                ticket.result.cvPdf,
-                ticket.result.cvMimeType
-              ),
-            },
-            coverLetter: {
-              fileName: ticket.result.coverLetterFileName,
-              mimeType: ticket.result.coverLetterMimeType,
-              dataUrl: this.toDataUrl(
-                ticket.result.coverLetterPdf,
-                ticket.result.coverLetterMimeType
-              ),
-            },
-          }
+        ? this.toApplicationTicketResultResponse(ticket.result)
         : null,
     };
   }
@@ -167,9 +164,26 @@ export class ApplicationsService {
     return { baseCv };
   }
 
+  async getFullName(): Promise<GetFullNameResponse> {
+    const fullName = await this.getProfileTextOrEmpty(FULL_NAME_KEY);
+    return { fullName };
+  }
+
   async getWorkTasks(): Promise<GetWorkTasksResponse> {
     const workTasks = await this.getProfileTextOrEmpty(WORK_TASKS_KEY);
     return { workTasks };
+  }
+
+  async updateFullName(
+    request: UpdateFullNameRequest
+  ): Promise<GetFullNameResponse> {
+    const fullName = await this.saveProfileText(
+      FULL_NAME_KEY,
+      request?.fullName,
+      "fullName"
+    );
+
+    return { fullName };
   }
 
   async updateBaseCv(request: UpdateBaseCvRequest): Promise<GetBaseCvResponse> {
@@ -203,8 +217,187 @@ export class ApplicationsService {
       throw new UnauthorizedException("Invalid application result secret.");
     }
 
-    const personalNote = this.requireText(input.personalNote, "personalNote");
+    const requestFields = this.getSaveApplicationResultFields(input.request);
 
+    await this.persistApplicationResult({
+      ticketId: input.ticketId,
+      personalNote: this.requireCallbackText(
+        requestFields.personalNote,
+        "personalNote"
+      ),
+      cvMarkdown: this.requireCallbackText(
+        requestFields.cvMarkdown,
+        "cvMarkdown"
+      ),
+      coverLetterMarkdown: this.requireCallbackText(
+        requestFields.coverLetterMarkdown,
+        "coverLetterMarkdown"
+      ),
+    });
+  }
+
+  async updateApplicationResult(
+    ticketId: string,
+    request: UpdateApplicationResultRequest
+  ): Promise<ApplicationTicketResultResponse> {
+    const cvMarkdown = this.requireText(request?.cvMarkdown, "cvMarkdown");
+    const coverLetterMarkdown = this.requireText(
+      request?.coverLetterMarkdown,
+      "coverLetterMarkdown"
+    );
+
+    const updatedResult = await this.prisma.$transaction(async (tx) => {
+      const ticket = await tx.applicationTicket.findUnique({
+        where: { id: ticketId },
+        select: { id: true },
+      });
+
+      if (!ticket) {
+        throw new NotFoundException("Application ticket was not found.");
+      }
+
+      const existingResult = await tx.applicationTicketResult.findUnique({
+        where: { ticketId },
+      });
+
+      if (!existingResult) {
+        throw new NotFoundException("Application result was not found.");
+      }
+
+      const result = await tx.applicationTicketResult.update({
+        where: { ticketId },
+        data: {
+          cvMarkdown,
+          coverLetterMarkdown,
+        },
+      });
+
+      await tx.applicationTicket.update({
+        where: { id: ticketId },
+        data: {
+          status: "completed",
+          lastError: null,
+        },
+      });
+
+      return result;
+    });
+
+    return this.toApplicationTicketResultResponse(updatedResult);
+  }
+
+  async deleteApplication(ticketId: string): Promise<void> {
+    const deleted = await this.prisma.applicationTicket.deleteMany({
+      where: { id: ticketId },
+    });
+
+    if (deleted.count === 0) {
+      throw new NotFoundException("Application ticket was not found.");
+    }
+  }
+
+  private async dispatchApplicationPipeline(
+    input: PipelineDispatchInput
+  ): Promise<void> {
+    if (this.getApplicationPipelineMode() === "mock") {
+      this.scheduleMockApplicationResult(input);
+      return;
+    }
+
+    await this.triggerWorkflow(input);
+  }
+
+  private async triggerWorkflow(input: PipelineDispatchInput): Promise<void> {
+    const webhookUrl = this.getWebhookUrl();
+    const startedAt = Date.now();
+
+    try {
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        const failureMessage = await this.getWebhookFailureMessage(response);
+
+        logHttpExchange({
+          logger: this.logger,
+          kind: "Outgoing Request",
+          method: "POST",
+          address: webhookUrl,
+          body: input,
+          statusCode: response.status,
+          statusText: response.statusText,
+          durationMs: Date.now() - startedAt,
+          error: failureMessage,
+        });
+
+        await this.markTicketFailed(input.ticketId, failureMessage);
+        throw new BadGatewayException(failureMessage);
+      }
+
+      logHttpExchange({
+        logger: this.logger,
+        kind: "Outgoing Request",
+        method: "POST",
+        address: webhookUrl,
+        body: input,
+        statusCode: response.status,
+        statusText: response.statusText,
+        durationMs: Date.now() - startedAt,
+      });
+    } catch (error) {
+      if (error instanceof BadGatewayException) {
+        throw error;
+      }
+
+      const errorMessage = this.getErrorMessage(error);
+
+      logHttpExchange({
+        logger: this.logger,
+        kind: "Outgoing Request",
+        method: "POST",
+        address: webhookUrl,
+        body: input,
+        statusCode: HttpStatus.BAD_GATEWAY,
+        statusText: "Bad Gateway",
+        durationMs: Date.now() - startedAt,
+        error: errorMessage,
+      });
+
+      await this.markTicketFailed(input.ticketId, errorMessage);
+      throw new BadGatewayException("Failed to trigger n8n workflow.");
+    }
+  }
+
+  private scheduleMockApplicationResult(input: PipelineDispatchInput) {
+    setTimeout(() => {
+      void this.completeMockApplication(input).catch(async (error) => {
+        await this.markTicketFailed(
+          input.ticketId,
+          this.getErrorMessage(error)
+        );
+      });
+    }, APPLICATION_PIPELINE_MOCK_DELAY_MS);
+  }
+
+  private async completeMockApplication(
+    input: PipelineDispatchInput
+  ): Promise<void> {
+    await this.persistApplicationResult({
+      ticketId: input.ticketId,
+      personalNote: this.createMockPersonalNote(input),
+      cvMarkdown: this.createMockCvMarkdown(input),
+      coverLetterMarkdown: this.createMockCoverLetterMarkdown(input),
+    });
+  }
+
+  private async persistApplicationResult(
+    input: PersistApplicationResultInput
+  ): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       const ticket = await tx.applicationTicket.findUnique({
         where: { id: input.ticketId },
@@ -219,22 +412,14 @@ export class ApplicationsService {
         where: { ticketId: input.ticketId },
         create: {
           ticketId: input.ticketId,
-          cvPdf: this.toPrismaBytes(input.cv.buffer),
-          cvFileName: input.cv.originalname,
-          cvMimeType: input.cv.mimetype,
-          coverLetterPdf: this.toPrismaBytes(input.coverLetter.buffer),
-          coverLetterFileName: input.coverLetter.originalname,
-          coverLetterMimeType: input.coverLetter.mimetype,
-          personalNote,
+          cvMarkdown: input.cvMarkdown,
+          coverLetterMarkdown: input.coverLetterMarkdown,
+          personalNote: input.personalNote,
         },
         update: {
-          cvPdf: this.toPrismaBytes(input.cv.buffer),
-          cvFileName: input.cv.originalname,
-          cvMimeType: input.cv.mimetype,
-          coverLetterPdf: this.toPrismaBytes(input.coverLetter.buffer),
-          coverLetterFileName: input.coverLetter.originalname,
-          coverLetterMimeType: input.coverLetter.mimetype,
-          personalNote,
+          cvMarkdown: input.cvMarkdown,
+          coverLetterMarkdown: input.coverLetterMarkdown,
+          personalNote: input.personalNote,
         },
       });
 
@@ -291,6 +476,13 @@ export class ApplicationsService {
     return entry.value;
   }
 
+  private getApplicationPipelineMode(): ApplicationPipelineMode {
+    return process.env.APPLICATION_PIPELINE_MODE?.trim().toLowerCase() ===
+      "mock"
+      ? "mock"
+      : "live";
+  }
+
   private getWebhookUrl(): string {
     const value = process.env.N8N_WORKFLOW_WEBHOOK_URL?.trim();
 
@@ -319,16 +511,67 @@ export class ApplicationsService {
     return url.toString();
   }
 
-  private toPrismaBytes(buffer: Buffer): Uint8Array<ArrayBuffer> {
-    const arrayBuffer: ArrayBuffer = new ArrayBuffer(buffer.length);
-    const bytes = new Uint8Array<ArrayBuffer>(arrayBuffer);
-    bytes.set(buffer);
-    return bytes;
+  private createMockPersonalNote(input: PipelineDispatchInput): string {
+    return [
+      `Mock pipeline result for ${input.fullName} at ${input.companyName}.`,
+      `Vacancy preview: ${this.previewText(input.vacancyDescription)}.`,
+      `Base CV preview: ${this.previewText(input.baseCv)}.`,
+      `Work tasks preview: ${this.previewText(input.workTasks)}.`,
+    ].join(" ");
   }
 
-  private toDataUrl(bytes: Uint8Array, mimeType: string): string {
-    const base64 = Buffer.from(bytes).toString("base64");
-    return `data:${mimeType};base64,${base64}`;
+  private createMockCvMarkdown(input: PipelineDispatchInput): string {
+    return [
+      `# ${input.fullName}`,
+      "",
+      "## Summary",
+      `Generated in backend-devmode for ${input.companyName} and ${this.previewText(
+        input.vacancyDescription
+      )}.`,
+      "",
+      "## Experience Highlights",
+      `- Tailored from base CV context: ${this.previewText(input.baseCv)}`,
+      `- Work task focus: ${this.previewText(input.workTasks)}`,
+      "",
+      "## Skills",
+      "- React",
+      "- TypeScript",
+      "- Product delivery",
+    ].join("\n");
+  }
+
+  private createMockCoverLetterMarkdown(input: PipelineDispatchInput): string {
+    return [
+      "# Cover Letter",
+      "",
+      `Dear Hiring Team at ${input.companyName},`,
+      "",
+      `This mock cover letter was generated for ${input.fullName}.`,
+      `It references the role preview: ${this.previewText(
+        input.vacancyDescription
+      )}.`,
+      "",
+      "## Why I fit",
+      `- Base CV context: ${this.previewText(input.baseCv)}`,
+      `- Work tasks context: ${this.previewText(input.workTasks)}`,
+      "",
+      "Sincerely,",
+      input.fullName,
+    ].join("\n");
+  }
+
+  private previewText(value: string): string {
+    const normalized = value.replace(/\s+/g, " ").trim();
+
+    if (!normalized) {
+      return "not provided";
+    }
+
+    if (normalized.length <= PREVIEW_TEXT_LENGTH) {
+      return normalized;
+    }
+
+    return `${normalized.slice(0, PREVIEW_TEXT_LENGTH - 3).trimEnd()}...`;
   }
 
   private getAppSecret(): string {
@@ -341,6 +584,127 @@ export class ApplicationsService {
     }
 
     return value;
+  }
+
+  private getSaveApplicationResultFields(
+    request: unknown
+  ): Partial<Record<CallbackResultField, unknown>> {
+    return CALLBACK_RESULT_FIELDS.reduce<
+      Partial<Record<CallbackResultField, unknown>>
+    >((fields, fieldName) => {
+      fields[fieldName] = this.getCallbackPayloadField(request, fieldName);
+      return fields;
+    }, {});
+  }
+
+  private getCallbackPayloadField(
+    request: unknown,
+    fieldName: CallbackResultField
+  ): unknown {
+    for (const candidate of this.collectCallbackPayloadCandidates(request)) {
+      if (fieldName in candidate) {
+        return candidate[fieldName];
+      }
+    }
+
+    return undefined;
+  }
+
+  private collectCallbackPayloadCandidates(
+    value: unknown,
+    visited = new Set<object>()
+  ): Record<string, unknown>[] {
+    if (!this.isRecord(value) || visited.has(value)) {
+      return [];
+    }
+
+    visited.add(value);
+
+    const candidates = [value];
+
+    for (const key of CALLBACK_PAYLOAD_CONTAINER_KEYS) {
+      candidates.push(
+        ...this.collectCallbackPayloadCandidates(value[key], visited)
+      );
+    }
+
+    return candidates;
+  }
+
+  private requireCallbackText(value: unknown, fieldName: string): string {
+    const extracted = this.extractStructuredText(value);
+
+    if (extracted === null) {
+      throw new BadRequestException(`${fieldName} must be a string.`);
+    }
+
+    const normalized = extracted.trim();
+
+    if (!normalized) {
+      throw new BadRequestException(`${fieldName} is required.`);
+    }
+
+    return normalized;
+  }
+
+  private extractStructuredText(
+    value: unknown,
+    visited = new Set<object>()
+  ): string | null {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (typeof value === "number" || typeof value === "boolean") {
+      return String(value);
+    }
+
+    if (value == null) {
+      return null;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const extracted = this.extractStructuredText(item, visited);
+
+        if (extracted && extracted.trim()) {
+          return extracted;
+        }
+      }
+
+      return null;
+    }
+
+    if (!this.isRecord(value) || visited.has(value)) {
+      return null;
+    }
+
+    visited.add(value);
+
+    for (const key of [
+      "text",
+      "content",
+      "message",
+      "note",
+      "markdown",
+      "value",
+    ]) {
+      const extracted = this.extractStructuredText(value[key], visited);
+
+      if (extracted && extracted.trim()) {
+        return extracted;
+      }
+    }
+
+    for (const nestedValue of Object.values(value)) {
+      const extracted = this.extractStructuredText(nestedValue, visited);
+
+      if (extracted && extracted.trim()) {
+        return extracted;
+      }
+    }
+
+    return null;
   }
 
   private requireText(value: unknown, fieldName: string): string {
@@ -357,6 +721,10 @@ export class ApplicationsService {
     return normalized;
   }
 
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
   private async markTicketFailed(id: string, lastError: string) {
     try {
       await this.prisma.applicationTicket.update({
@@ -367,7 +735,7 @@ export class ApplicationsService {
         },
       });
     } catch {
-      // Keep the original webhook error as the API response even if the update fails.
+      // Keep the original pipeline error as the API response even if the update fails.
     }
   }
 
@@ -386,13 +754,29 @@ export class ApplicationsService {
       return error.message.trim();
     }
 
-    return "Unknown n8n webhook error.";
+    return "Unknown application pipeline error.";
+  }
+
+  private toApplicationTicketResultResponse(result: {
+    personalNote: string;
+    createdAt: Date;
+    updatedAt: Date;
+    cvMarkdown: string;
+    coverLetterMarkdown: string;
+  }): ApplicationTicketResultResponse {
+    return {
+      personalNote: result.personalNote,
+      createdAt: result.createdAt.toISOString(),
+      updatedAt: result.updatedAt.toISOString(),
+      cvMarkdown: result.cvMarkdown,
+      coverLetterMarkdown: result.coverLetterMarkdown,
+    };
   }
 
   private toApplicationTicketListItem(ticket: {
     id: string;
     status: ApplicationTicketListItemResponse["status"];
-    fullName: string;
+    companyName: string;
     vacancyDescription: string;
     lastError: string | null;
     createdAt: Date;
@@ -401,7 +785,7 @@ export class ApplicationsService {
     return {
       ticketId: ticket.id,
       status: ticket.status,
-      fullName: ticket.fullName,
+      companyName: ticket.companyName,
       vacancyDescription: ticket.vacancyDescription,
       lastError: ticket.lastError,
       createdAt: ticket.createdAt.toISOString(),

@@ -1,6 +1,6 @@
 import type { ApiStatusResponse, DatabaseStatus } from "@repo/contracts";
 import { Injectable } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -13,7 +13,8 @@ export class StatusService {
 
     return {
       service: "pep-api",
-      environment: process.env.NODE_ENV ?? "development",
+      environment:
+        process.env.APP_MODE ?? process.env.NODE_ENV ?? "development",
       database,
       status: database === "up" ? "ok" : "degraded",
       timestamp: new Date().toISOString(),

@@ -13,7 +13,7 @@ export interface ApiStatusResponse {
 
 export interface CreateApplicationRequest {
   vacancyDescription: string;
-  fullName: string;
+  companyName: string;
 }
 
 export interface CreateApplicationResponse {
@@ -25,7 +25,7 @@ export interface CreateApplicationResponse {
 export interface ApplicationTicketListItemResponse {
   ticketId: string;
   status: ApplicationTicketStatus;
-  fullName: string;
+  companyName: string;
   vacancyDescription: string;
   lastError: string | null;
   createdAt: string;
@@ -36,29 +36,57 @@ export interface GetApplicationsResponse {
   applications: ApplicationTicketListItemResponse[];
 }
 
-export interface ApplicationResultFileResponse {
-  fileName: string;
-  mimeType: string;
-  dataUrl: string;
-}
-
 export interface ApplicationTicketResultResponse {
   personalNote: string;
   createdAt: string;
   updatedAt: string;
-  cv: ApplicationResultFileResponse;
-  coverLetter: ApplicationResultFileResponse;
+  cvMarkdown: string;
+  coverLetterMarkdown: string;
 }
 
 export interface GetApplicationTicketResponse {
   ticketId: string;
   status: ApplicationTicketStatus;
-  fullName: string;
+  companyName: string;
   vacancyDescription: string;
   lastError: string | null;
   createdAt: string;
   updatedAt: string;
   result: ApplicationTicketResultResponse | null;
+}
+
+export interface SaveApplicationResultRequest {
+  personalNote: string;
+  cvMarkdown: string;
+  coverLetterMarkdown: string;
+}
+
+export interface UpdateApplicationResultRequest {
+  cvMarkdown: string;
+  coverLetterMarkdown: string;
+}
+
+export interface ExportApplicationPdfRequest {
+  html: string;
+  fileName: string;
+}
+
+export interface ExportApplicationArchiveDocumentRequest {
+  html: string;
+  fileName: string;
+}
+
+export interface ExportApplicationArchiveRequest {
+  archiveName: string;
+  documents: ExportApplicationArchiveDocumentRequest[];
+}
+
+export interface GetFullNameResponse {
+  fullName: string;
+}
+
+export interface UpdateFullNameRequest {
+  fullName: string;
 }
 
 export interface GetBaseCvResponse {

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -23,7 +24,7 @@ model AppMetadata {
 model ApplicationTicket {
   id                 String                  @id @default(cuid())
   status             ApplicationTicketStatus
-  fullName           String
+  companyName        String
   vacancyDescription String
   lastError          String?
   result             ApplicationTicketResult?
@@ -32,15 +33,11 @@ model ApplicationTicket {
 }
 
 model ApplicationTicketResult {
-  ticketId                String            @id
-  ticket                  ApplicationTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  cvPdf                   Bytes
-  cvFileName              String
-  cvMimeType              String
-  coverLetterPdf          Bytes
-  coverLetterFileName     String
-  coverLetterMimeType     String
-  personalNote            String
-  createdAt               DateTime          @default(now())
-  updatedAt               DateTime          @updatedAt
+  ticketId          String            @id
+  ticket            ApplicationTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  cvMarkdown        String
+  coverLetterMarkdown String
+  personalNote      String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 }

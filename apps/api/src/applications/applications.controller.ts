@@ -1,17 +1,24 @@
 import type {
+  ApplicationTicketResultResponse,
   CreateApplicationRequest,
   CreateApplicationResponse,
+  ExportApplicationArchiveRequest,
+  ExportApplicationPdfRequest,
   GetApplicationsResponse,
   GetApplicationTicketResponse,
   GetBaseCvResponse,
+  GetFullNameResponse,
   GetWorkTasksResponse,
+  SaveApplicationResultRequest,
+  UpdateApplicationResultRequest,
   UpdateBaseCvRequest,
+  UpdateFullNameRequest,
   UpdateWorkTasksRequest,
 } from "@repo/contracts";
 import {
   Body,
-  BadRequestException,
   Controller,
+  Delete,
   Get,
   Headers,
   HttpCode,
@@ -19,31 +26,18 @@ import {
   Param,
   Post,
   Put,
-  UnsupportedMediaTypeException,
-  UploadedFiles,
-  UseInterceptors,
+  StreamableFile,
 } from "@nestjs/common";
-import { FileFieldsInterceptor } from "@nestjs/platform-express";
 
+import { PdfService } from "../pdf/pdf.service";
 import { ApplicationsService } from "./applications.service";
-
-const MAX_PDF_FILE_SIZE_BYTES = 10 * 1024 * 1024;
-const PDF_MIME_TYPE = "application/pdf";
-
-type UploadedDocument = {
-  buffer: Buffer;
-  mimetype: string;
-  originalname: string;
-};
-
-type UploadedResultFiles = {
-  cv?: UploadedDocument[];
-  coverLetter?: UploadedDocument[];
-};
 
 @Controller("api/v1/applications")
 export class ApplicationsController {
-  constructor(private readonly applicationsService: ApplicationsService) {}
+  constructor(
+    private readonly applicationsService: ApplicationsService,
+    private readonly pdfService: PdfService
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
@@ -63,6 +57,11 @@ export class ApplicationsController {
     return this.applicationsService.getBaseCv();
   }
 
+  @Get("fullName")
+  async getFullName(): Promise<GetFullNameResponse> {
+    return this.applicationsService.getFullName();
+  }
+
   @Get("workTasks")
   async getWorkTasks(): Promise<GetWorkTasksResponse> {
     return this.applicationsService.getWorkTasks();
@@ -73,6 +72,13 @@ export class ApplicationsController {
     @Body() body: UpdateBaseCvRequest
   ): Promise<GetBaseCvResponse> {
     return this.applicationsService.updateBaseCv(body);
+  }
+
+  @Put("fullName")
+  async updateFullName(
+    @Body() body: UpdateFullNameRequest
+  ): Promise<GetFullNameResponse> {
+    return this.applicationsService.updateFullName(body);
   }
 
   @Put("workTasks")
@@ -91,57 +97,68 @@ export class ApplicationsController {
 
   @Post(":ticketId/result")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: "cv", maxCount: 1 },
-        { name: "coverLetter", maxCount: 1 },
-      ],
-      {
-        limits: {
-          fileSize: MAX_PDF_FILE_SIZE_BYTES,
-          files: 2,
-        },
-      }
-    )
-  )
   async uploadResult(
     @Param("ticketId") ticketId: string,
     @Headers("x-app-secret") appSecret: string | undefined,
-    @Body("personalNote") personalNote: unknown,
-    @UploadedFiles() files: UploadedResultFiles
+    @Body() body: SaveApplicationResultRequest
   ): Promise<void> {
-    const cv = this.getRequiredPdfFile(files?.cv, "cv");
-    const coverLetter = this.getRequiredPdfFile(
-      files?.coverLetter,
-      "coverLetter"
-    );
-
     await this.applicationsService.saveApplicationResult({
       ticketId,
       appSecret,
-      personalNote,
-      cv,
-      coverLetter,
+      request: body,
     });
   }
 
-  private getRequiredPdfFile(
-    fileList: UploadedDocument[] | undefined,
-    fieldName: string
-  ): UploadedDocument {
-    const file = fileList?.[0];
+  @Put(":ticketId/result")
+  async updateResult(
+    @Param("ticketId") ticketId: string,
+    @Body() body: UpdateApplicationResultRequest
+  ): Promise<ApplicationTicketResultResponse> {
+    return this.applicationsService.updateApplicationResult(ticketId, body);
+  }
 
-    if (!file) {
-      throw new BadRequestException(`${fieldName} file is required.`);
-    }
+  @Post(":ticketId/pdf")
+  @HttpCode(HttpStatus.OK)
+  async exportPdf(
+    @Param("ticketId") ticketId: string,
+    @Body() body: ExportApplicationPdfRequest
+  ): Promise<StreamableFile> {
+    const { buffer, fileName } = await this.pdfService.renderApplicationPdf({
+      ticketId,
+      html: body.html,
+      fileName: body.fileName,
+    });
 
-    if (file.mimetype !== PDF_MIME_TYPE) {
-      throw new UnsupportedMediaTypeException(
-        `${fieldName} must be a PDF file.`
-      );
-    }
+    return new StreamableFile(buffer, {
+      type: "application/pdf",
+      disposition: `attachment; filename="${fileName}"`,
+      length: buffer.length,
+    });
+  }
 
-    return file;
+  @Post(":ticketId/archive")
+  @HttpCode(HttpStatus.OK)
+  async exportArchive(
+    @Param("ticketId") ticketId: string,
+    @Body() body: ExportApplicationArchiveRequest
+  ): Promise<StreamableFile> {
+    const { buffer, fileName } =
+      await this.pdfService.renderApplicationArchive({
+        ticketId,
+        archiveName: body.archiveName,
+        documents: body.documents,
+      });
+
+    return new StreamableFile(buffer, {
+      type: "application/zip",
+      disposition: `attachment; filename="${fileName}"`,
+      length: buffer.length,
+    });
+  }
+
+  @Delete(":ticketId")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteApplication(@Param("ticketId") ticketId: string): Promise<void> {
+    await this.applicationsService.deleteApplication(ticketId);
   }
 }
