@@ -69,7 +69,7 @@ export function HomeInsights({
                     </span>
                     <div>
                       <h3 className={styles.recentTicketTitle}>
-                        {formatTicketTitle(ticket.ticketId, ticket.companyName)}
+                        {ticket.companyName}
                       </h3>
                     </div>
                   </div>

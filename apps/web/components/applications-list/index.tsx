@@ -10,6 +10,7 @@ import { ApplicationStatusBadge } from "@/components/application-status-badge";
 import { api, getErrorMessage } from "@/lib/api";
 import { formatTicketTitle } from "@/lib/application-ticket";
 import styles from "./applications-list.module.css";
+import { useRouter } from "next/navigation";
 
 function truncateText(value: string, maxLength: number) {
   if (value.length <= maxLength) {
@@ -42,6 +43,8 @@ export function ApplicationsList({
     string[]
   >([]);
   const selectAllRef = useRef<HTMLInputElement | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     let active = true;
@@ -173,7 +176,9 @@ export function ApplicationsList({
     setErrorMessage(null);
 
     const results = await Promise.allSettled(
-      ticketIds.map((ticketId) => api.delete(`/api/v1/applications/${ticketId}`))
+      ticketIds.map((ticketId) =>
+        api.delete(`/api/v1/applications/${ticketId}`)
+      )
     );
 
     const deletedTicketIds = results.flatMap((result, index) =>
@@ -362,7 +367,9 @@ export function ApplicationsList({
                     type="checkbox"
                     checked={isAllSelectableTicketsSelected}
                     onChange={handleToggleAllTickets}
-                    disabled={selectableTicketIds.length === 0 || isDeletingTickets}
+                    disabled={
+                      selectableTicketIds.length === 0 || isDeletingTickets
+                    }
                     aria-label={
                       isAllSelectableTicketsSelected
                         ? "Deselect all tickets"
@@ -400,8 +407,12 @@ export function ApplicationsList({
                     </td>
                     <td>
                       <div className={styles.primaryCell}>
-                        <strong>
-                          {formatTicketTitle(ticket.ticketId, ticket.companyName)}
+                        <strong
+                          onClick={() => {
+                            router.push(`/applications/${ticket.ticketId}`);
+                          }}
+                        >
+                          {ticket.companyName}
                         </strong>
                         <p className={styles.createdAt}>
                           Created {new Date(ticket.createdAt).toLocaleString()}
@@ -425,23 +436,15 @@ export function ApplicationsList({
                       {ticket.lastError ?? "none"}
                     </td>
                     <td>
-                      <div className={styles.actionsInline}>
-                        <Link
-                          className={`${styles.rowLink} ${styles.rowLinkInline}`}
-                          href={`/applications/${ticket.ticketId}`}
-                        >
-                          <span>Open workspace</span>
-                        </Link>
-                        <button
-                          className={styles.dangerButton}
-                          type="button"
-                          onClick={() => void handleDelete([ticket.ticketId])}
-                          disabled={isDeletingTickets}
-                        >
-                          <Trash2 size={16} />
-                          <span>{isDeleting ? "Deleting..." : "Delete"}</span>
-                        </button>
-                      </div>
+                      <button
+                        className={styles.dangerButton}
+                        type="button"
+                        onClick={() => void handleDelete([ticket.ticketId])}
+                        disabled={isDeletingTickets}
+                      >
+                        <Trash2 size={16} />
+                        <span>{isDeleting ? "Deleting..." : "Delete"}</span>
+                      </button>
                     </td>
                   </tr>
                 );
