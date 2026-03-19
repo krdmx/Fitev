@@ -7,12 +7,14 @@ export default tseslint.config(
   {
     ignores: [
       "**/.next/**",
+      "**/next-env.d.ts",
       "**/.turbo/**",
       "**/coverage/**",
       "**/dist/**",
       "**/node_modules/**",
-      "n8n_data/**"
-    ]
+      "apps/api/src/generated/**",
+      "n8n_data/**",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -21,30 +23,30 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.node
-      }
+        ...globals.node,
+      },
     },
     rules: {
-      "no-console": ["warn", { "allow": ["warn", "error"] }]
-    }
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+    },
   },
   {
     files: ["apps/api/**/*.{ts,tsx}"],
     languageOptions: {
-      globals: globals.node
-    }
+      globals: globals.node,
+    },
   },
   {
     files: ["apps/web/**/*.{ts,tsx}"],
     languageOptions: {
-      globals: globals.browser
+      globals: globals.browser,
     },
     plugins: {
-      "@next/next": nextPlugin
+      "@next/next": nextPlugin,
     },
     rules: {
       ...nextPlugin.configs.recommended.rules,
-      ...nextPlugin.configs["core-web-vitals"].rules
-    }
+      ...nextPlugin.configs["core-web-vitals"].rules,
+    },
   }
 );

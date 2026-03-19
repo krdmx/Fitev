@@ -11,9 +11,14 @@
   },
   "dependencies": {
     "@repo/contracts": "workspace:*",
+    "@uiw/react-markdown-preview": "^5.1.5",
+    "axios": "^1.13.6",
+    "lucide-react": "^0.511.0",
     "next": "^15.3.4",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.4",

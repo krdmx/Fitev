@@ -9,5 +9,6 @@ coverage
 dist
 node_modules
 n8n_data
+apps/api/src/generated
 *.tsbuildinfo
 *.log

@@ -1,9 +1,10 @@
 {
   "extends": "../../packages/config/tsconfig/nest.json",
   "compilerOptions": {
+    "allowJs": true,
     "baseUrl": ".",
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/generated/prisma/**/*.js", "src/generated/prisma/**/*.d.ts"]
 }
