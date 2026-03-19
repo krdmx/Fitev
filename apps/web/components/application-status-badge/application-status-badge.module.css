@@ -1,0 +1,25 @@
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.statusOk {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.statusPending {
+  color: var(--accent-deep);
+  background: var(--accent-soft);
+}
+
+.statusDegraded {
+  color: var(--danger);
+  background: var(--danger-soft);
+}

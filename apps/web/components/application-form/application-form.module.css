@@ -1,0 +1,235 @@
+.formStack {
+  display: grid;
+  gap: 1rem;
+}
+
+.heroCopy {
+  max-width: 44rem;
+}
+
+.eyebrow,
+.statusLabel {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 4vw, 4.1rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.94;
+  color: black !important;
+}
+
+.lede,
+.formHint {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.lede {
+  margin: 1rem 0 0;
+}
+
+.composerForm {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.6rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.94),
+    rgba(246, 248, 252, 0.78)
+  );
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.fieldLabel {
+  color: #39445f;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.textInput,
+.textArea {
+  width: 100%;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(24, 32, 51, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ink);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.textInput:focus,
+.textArea:focus {
+  outline: none;
+  border-color: rgba(240, 103, 42, 0.4);
+  box-shadow: 0 0 0 4px rgba(240, 103, 42, 0.12);
+}
+
+.textArea {
+  min-height: 220px;
+  resize: vertical;
+}
+
+.formActions,
+.feedbackHeader,
+.feedbackLinks {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.88rem 1.28rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 18px 32px rgba(212, 79, 22, 0.28);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+.primaryButton:hover:not(:disabled),
+.textLink:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.feedbackPanel {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  backdrop-filter: blur(var(--panel-blur));
+  box-shadow: var(--shadow);
+  animation: riseIn var(--panel-enter-duration) ease both;
+}
+
+.feedbackPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.38),
+    rgba(255, 255, 255, 0)
+  );
+  pointer-events: none;
+}
+
+.feedbackSuccess {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(233, 247, 240, 0.95),
+      rgba(255, 255, 255, 0.8)
+    ),
+    var(--panel);
+}
+
+.feedbackError {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 238, 235, 0.95),
+      rgba(255, 255, 255, 0.82)
+    ),
+    var(--panel);
+}
+
+.feedbackContent {
+  position: relative;
+  z-index: 1;
+}
+
+.feedbackTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.feedbackText {
+  margin: 0.75rem 0 0;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  color: var(--accent-deep);
+  background: var(--accent-soft);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.textLink {
+  color: #22304f;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.textLinkInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 820px) {
+  .formActions,
+  .feedbackHeader,
+  .feedbackLinks {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

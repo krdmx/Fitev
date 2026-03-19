@@ -1,74 +1,41 @@
-import Link from "next/link";
+import type { GetApplicationsResponse } from "@repo/contracts";
+import { connection } from "next/server";
 
 import { ApplicationForm } from "@/components/application-form";
-import { StatusCard } from "@/components/status-card";
+import { HomeInsights } from "@/components/home-insights";
+import { SiteHeader } from "@/components/site-header";
+import { getErrorMessage } from "@/lib/api-response";
+import { serverApi } from "@/lib/server-api";
+import styles from "./page.module.css";
 
-const publicApiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://api.localhost";
+export default async function HomePage() {
+  await connection();
 
-export default function HomePage() {
+  let applicationsPayload: GetApplicationsResponse | null = null;
+  let applicationsErrorMessage: string | null = null;
+
+  try {
+    const response = await serverApi.get<GetApplicationsResponse>(
+      "/api/v1/applications"
+    );
+    applicationsPayload = response.data;
+  } catch (error) {
+    applicationsErrorMessage = getErrorMessage(error);
+  }
+
   return (
-    <main className="shell">
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">Self-hosted stack</p>
-          <h1>Frontend, backend and automation in one monorepo.</h1>
-          <p className="lede">
-            This workspace bundles Next.js, Nest.js, PostgreSQL, n8n and Caddy
-            into one reproducible Docker-driven setup.
-          </p>
-        </div>
-        <div className="hero-grid">
-          <div className="pill">app.localhost</div>
-          <div className="pill">api.localhost</div>
-          <div className="pill">n8n.localhost</div>
-          <Link className="pill pill-link" href="/applications">
-            View applications
-          </Link>
-          <Link className="pill pill-link" href="/profile">
-            Edit profile
-          </Link>
-        </div>
-      </section>
+    <main className={styles.pageShell}>
+      <SiteHeader />
 
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <p className="section-title">Pipeline trigger</p>
-            <h2>Generate a new application ticket</h2>
-          </div>
-          <code>{`${publicApiUrl}/api/v1/applications`}</code>
-        </div>
-        <ApplicationForm />
-      </section>
+      <section className={styles.dashboardGrid}>
+        <section className={styles.heroPanel}>
+          <ApplicationForm />
+        </section>
 
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <p className="section-title">API handshake</p>
-            <h2>Frontend status check</h2>
-          </div>
-          <code>{publicApiUrl}</code>
-        </div>
-        <StatusCard />
-      </section>
-
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <p className="section-title">Applications</p>
-            <h2>Browse created tickets</h2>
-          </div>
-          <code>{`${publicApiUrl}/api/v1/applications`}</code>
-        </div>
-        <p className="inline-note">
-          Open the applications page to review every ticket and inspect one
-          application in detail.
-        </p>
-        <p className="submission-links">
-          <Link className="text-link" href="/applications">
-            Open applications list
-          </Link>
-        </p>
+        <HomeInsights
+          payload={applicationsPayload}
+          errorMessage={applicationsErrorMessage}
+        />
       </section>
     </main>
   );

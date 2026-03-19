@@ -1,8 +1,16 @@
-import Link from "next/link";
+import type {
+  GetApplicationTicketResponse,
+  GetBaseCvResponse,
+  GetFullNameResponse,
+} from "@repo/contracts";
+import { connection } from "next/server";
 
 import { TicketResultCard } from "@/components/ticket-result-card";
-
-const publicApiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://api.localhost";
+import { SiteHeader } from "@/components/site-header";
+import { buildApiUrl } from "@/lib/api-config";
+import { getErrorMessage } from "@/lib/api-response";
+import { serverApi } from "@/lib/server-api";
+import styles from "./page.module.css";
 
 type ApplicationTicketPageProps = {
   params: Promise<{
@@ -14,38 +22,61 @@ export default async function ApplicationTicketPage({
   params,
 }: ApplicationTicketPageProps) {
   const { ticketId } = await params;
+  await connection();
+
+  const [ticketResult, baseCvResult, fullNameResult] = await Promise.allSettled([
+    serverApi.get<GetApplicationTicketResponse>(`/api/v1/applications/${ticketId}`),
+    serverApi.get<GetBaseCvResponse>("/api/v1/applications/baseCv"),
+    serverApi.get<GetFullNameResponse>("/api/v1/applications/fullName"),
+  ]);
+  const payload =
+    ticketResult.status === "fulfilled" ? ticketResult.value.data : null;
+  const errorMessage =
+    ticketResult.status === "rejected"
+      ? getErrorMessage(ticketResult.reason)
+      : null;
+  const baseCvPayload =
+    baseCvResult.status === "fulfilled" ? baseCvResult.value.data : null;
+  const baseCvErrorMessage =
+    baseCvResult.status === "rejected"
+      ? getErrorMessage(baseCvResult.reason)
+      : null;
+  const fullNamePayload =
+    fullNameResult.status === "fulfilled" ? fullNameResult.value.data : null;
+  const fullNameErrorMessage =
+    fullNameResult.status === "rejected"
+      ? getErrorMessage(fullNameResult.reason)
+      : null;
 
   return (
-    <main className="shell">
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">Application ticket</p>
-          <h1>Inspect one application and its generated result.</h1>
-          <p className="lede">
-            Use this page to check the latest backend status, manual refreshes,
-            and uploaded result files for ticket <code>{ticketId}</code>.
+    <main className={styles.pageShell}>
+      <SiteHeader />
+
+      <section className={styles.introPanel}>
+        <div className={styles.introCopy}>
+          <p className={styles.eyebrow}>Ticket Workspace</p>
+          <h1 className={styles.title}>
+            Edit markdown, review the preview, and export PDF.
+          </h1>
+          <p className={styles.lede}>
+            This workspace is driven by the backend ticket result for{" "}
+            <code>{ticketId}</code>.
           </p>
         </div>
-        <div className="hero-grid">
-          <Link className="pill pill-link" href="/applications">
-            All applications
-          </Link>
-          <Link className="pill pill-link" href="/">
-            Back to pipeline
-          </Link>
-        </div>
+        <code className={styles.endpoint}>
+          {buildApiUrl(`/api/v1/applications/${ticketId}`)}
+        </code>
       </section>
 
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <p className="section-title">Application detail</p>
-            <h2>Ticket {ticketId}</h2>
-          </div>
-          <code>{`${publicApiUrl}/api/v1/applications/${ticketId}`}</code>
-        </div>
-        <TicketResultCard ticketId={ticketId} />
-      </section>
+      <TicketResultCard
+        ticketId={ticketId}
+        initialPayload={payload ?? undefined}
+        initialErrorMessage={errorMessage}
+        initialBaseCv={baseCvPayload?.baseCv}
+        initialBaseCvErrorMessage={baseCvErrorMessage}
+        initialFullName={fullNamePayload?.fullName}
+        initialFullNameErrorMessage={fullNameErrorMessage}
+      />
     </main>
   );
 }

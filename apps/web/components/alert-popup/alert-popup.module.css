@@ -1,0 +1,177 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(24, 32, 51, 0.42), rgba(24, 32, 51, 0.58)),
+    rgba(24, 32, 51, 0.28);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 180ms ease both;
+}
+
+.panel {
+  position: relative;
+  width: min(100%, 30rem);
+  overflow: hidden;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 241, 238, 0.96),
+      rgba(255, 255, 255, 0.92)
+    ),
+    var(--panel);
+  box-shadow: 0 28px 80px rgba(15, 21, 34, 0.28);
+  animation: riseIn var(--panel-enter-duration) ease both;
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.38),
+    rgba(255, 255, 255, 0)
+  );
+  pointer-events: none;
+}
+
+.content,
+.actions {
+  position: relative;
+  z-index: 1;
+}
+
+.content {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+
+.description {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1.25rem;
+}
+
+.cancelButton,
+.confirmButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 9.5rem;
+  padding: 0.88rem 1.28rem;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease,
+    border-color 160ms ease;
+}
+
+.cancelButton {
+  border: 1px solid rgba(24, 32, 51, 0.1);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ink);
+}
+
+.confirmButton {
+  border: 1px solid transparent;
+  color: #fff;
+}
+
+.confirmButtonDanger {
+  background: linear-gradient(135deg, var(--danger), #a93030);
+  box-shadow: 0 18px 32px rgba(200, 71, 71, 0.26);
+}
+
+.cancelButton:hover:not(:disabled),
+.confirmButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.cancelButton:focus-visible,
+.confirmButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(240, 103, 42, 0.16);
+}
+
+.cancelButton:disabled,
+.confirmButton:disabled {
+  opacity: 0.72;
+  cursor: wait;
+  transform: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 560px) {
+  .overlay {
+    padding: 1rem;
+  }
+
+  .panel {
+    padding: 1.2rem;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancelButton,
+  .confirmButton {
+    width: 100%;
+  }
+}

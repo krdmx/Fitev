@@ -1,0 +1,211 @@
+.insightsColumn {
+  display: grid;
+  gap: 1rem;
+}
+
+.sidebarPanel,
+.metricsPanel {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  backdrop-filter: blur(var(--panel-blur));
+  box-shadow: var(--shadow);
+  animation: riseIn var(--panel-enter-duration) ease both;
+}
+
+.sidebarPanel::before,
+.metricsPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.38),
+    rgba(255, 255, 255, 0)
+  );
+  pointer-events: none;
+}
+
+.panelContent {
+  position: relative;
+  z-index: 1;
+}
+
+.headingRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.sectionLink {
+  color: #22304f;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.sectionLink:hover,
+.recentTicket:hover {
+  transform: translateY(-1px);
+}
+
+.note {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.noteError {
+  color: var(--danger);
+}
+
+.emptyState {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+  color: var(--muted);
+}
+
+.emptyState p {
+  margin: 0;
+}
+
+.recentTicketList {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.recentTicket {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 1px solid rgba(24, 32, 51, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.recentTicketHead {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.miniIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.recentTicketTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.recentTicketId {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.recentTicketCopy {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.recentTicketMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #7a869f;
+  font-size: 0.86rem;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.metricCell {
+  padding: 1rem;
+  border: 1px solid rgba(24, 32, 51, 0.06);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.metricLabel {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.metricValue {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 820px) {
+  .headingRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+}
