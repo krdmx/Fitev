@@ -3,6 +3,10 @@
   admin off
 }
 
+http://localhost, http://{$APP_HOST} {
+  reverse_proxy host.docker.internal:3000
+}
+
 http://{$API_HOST} {
   reverse_proxy api:3001
 }

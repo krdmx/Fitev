@@ -297,6 +297,7 @@ async function main() {
       ...process.env,
       NEXT_PUBLIC_API_URL: "http://api.localhost",
       APP_MODE: "frontend-devmode",
+      MOCK_MODE: process.env.MOCK_MODE ?? "false",
     },
     stdio: "inherit",
     detached: process.platform !== "win32",

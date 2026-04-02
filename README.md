@@ -56,7 +56,10 @@ Templates:
 Mode-specific env knobs used by the runtime scripts:
 
 - `APP_MODE`: `backend-devmode`, `frontend-devmode`, `production`
-- `APPLICATION_PIPELINE_MODE`: `mock` or `live`
+- `MOCK_MODE`: `true` or `false`; when set, it overrides the pipeline mode
+- `APPLICATION_PIPELINE_MODE`: `mock` or `live`; kept as a legacy fallback when `MOCK_MODE` is not set
+- `WEB_HIDE_API_ENDPOINTS`: hides the UI endpoint chips; defaults to `true` in `production`
+- `WEB_ENABLE_STATUS_PAGE`: controls the web `/status` route and nav item; defaults to `false` in `production`
 - `NEXT_PUBLIC_API_URL`: the single API base URL used by the web app in both browser and SSR
 
 ## Initial Setup
@@ -114,18 +117,20 @@ pnpm dev:backend
 This mode starts Docker `postgres` and `caddy` first and then runs local `web` plus local `api` with:
 
 - `APP_MODE=backend-devmode`
-- `APPLICATION_PIPELINE_MODE=mock`
+- `MOCK_MODE=true`
 - `NEXT_PUBLIC_API_URL=http://api.localhost`
 
 URLs:
 
-- web: `http://localhost:3000`
+- app through Caddy: `http://localhost`
+- direct Next.js dev server: `http://localhost:3000`
+- landing through Caddy: `http://land.localhost`
 - api through Caddy: `http://api.localhost`
 
 Pipeline behavior:
 
 - `POST /api/v1/applications` still creates a `processing` ticket
-- the API auto-completes that ticket with synthetic markdown documents and a deterministic personal note
+- the API returns the saved base CV as the generated CV, locks the role brief and base CV, and auto-completes the rest with mock pipeline data
 - `n8n` is not required in this mode
 
 Infra helpers:
@@ -147,11 +152,14 @@ pnpm dev:frontend
 This mode starts Docker `api`, `postgres`, `n8n`, `gotenberg`, and `caddy`, then runs local `web` with:
 
 - `APP_MODE=frontend-devmode`
+- `MOCK_MODE=false` by default, with optional override from the root `.env`
 - `NEXT_PUBLIC_API_URL=http://api.localhost`
 
 URLs:
 
-- web: `http://localhost:3000`
+- app through Caddy: `http://localhost`
+- direct Next.js dev server: `http://localhost:3000`
+- landing through Caddy: `http://land.localhost`
 - api through Caddy: `http://api.localhost`
 - n8n through Caddy: `http://n8n.localhost`
 
@@ -187,19 +195,30 @@ pnpm docker:down
 
 URLs:
 
-- `http://app.localhost`
+- `http://localhost`
+- `http://land.localhost`
 - `http://api.localhost`
 - `http://n8n.localhost`
+
+Production UI defaults:
+
+- the web app hides API endpoint chips
+- the web `/status` page and `Status` nav item are disabled unless `WEB_ENABLE_STATUS_PAGE=true`
 
 ## Local Hosts for frontend-devmode and production
 
 If your system does not resolve `*.localhost` automatically, add these entries to your hosts file:
 
 ```text
-127.0.0.1 app.localhost
+127.0.0.1 land.localhost
 127.0.0.1 api.localhost
 127.0.0.1 n8n.localhost
 ```
+
+Google OAuth for local development:
+
+- Authorized JavaScript origin: `http://localhost`
+- Authorized redirect URI: `http://localhost/api/auth/callback/google`
 
 ## Project Commands
 
@@ -291,6 +310,11 @@ API status endpoint:
 
 - `GET /api/v1/status`
 - example: `http://localhost:3001/api/v1/status`
+
+Web status page:
+
+- `GET /status`
+- hidden by default in `production`; re-enable with `WEB_ENABLE_STATUS_PAGE=true`
 
 Application trigger endpoint:
 
@@ -479,7 +503,10 @@ docker compose version
 Mode-specific переменные, которые используют runtime-скрипты:
 
 - `APP_MODE`: `backend-devmode`, `frontend-devmode`, `production`
-- `APPLICATION_PIPELINE_MODE`: `mock` или `live`
+- `MOCK_MODE`: `true` или `false`; если задан, имеет приоритет над режимом pipeline
+- `APPLICATION_PIPELINE_MODE`: `mock` или `live`; оставлен как legacy fallback, если `MOCK_MODE` не задан
+- `WEB_HIDE_API_ENDPOINTS`: скрывает UI-плашки с endpoint; по умолчанию `true` в `production`
+- `WEB_ENABLE_STATUS_PAGE`: управляет web-маршрутом `/status` и пунктом меню; по умолчанию `false` в `production`
 - `NEXT_PUBLIC_API_URL`: единый базовый URL API для web-приложения и в браузере, и в SSR
 
 ## Первая установка
@@ -537,18 +564,20 @@ pnpm dev:backend
 Команда сначала поднимает Docker `postgres` и `caddy`, а потом запускает локальные `web` и `api` с:
 
 - `APP_MODE=backend-devmode`
-- `APPLICATION_PIPELINE_MODE=mock`
+- `MOCK_MODE=true`
 - `NEXT_PUBLIC_API_URL=http://api.localhost`
 
 Адреса:
 
-- web: `http://localhost:3000`
+- app через Caddy: `http://localhost`
+- прямой Next.js dev server: `http://localhost:3000`
+- лендинг через Caddy: `http://land.localhost`
 - api через Caddy: `http://api.localhost`
 
 Поведение pipeline:
 
 - `POST /api/v1/applications` всё так же создаёт `processing` ticket
-- API автоматически переводит ticket в `completed` и сохраняет синтетические markdown-документы и предсказуемый personal note
+- API возвращает сохранённый base CV как итоговый CV, блокирует изменение vacancy/base CV и автоматически завершает остальное mock-ответом pipeline
 - `n8n` в этом режиме не нужен
 
 Команды для infra:
@@ -570,11 +599,14 @@ pnpm dev:frontend
 Команда поднимает Docker `api`, `postgres`, `n8n`, `gotenberg` и `caddy`, а затем запускает локальный `web` с:
 
 - `APP_MODE=frontend-devmode`
+- `MOCK_MODE=false` по умолчанию, с возможностью переопределить через корневой `.env`
 - `NEXT_PUBLIC_API_URL=http://api.localhost`
 
 Адреса:
 
-- web: `http://localhost:3000`
+- app через Caddy: `http://localhost`
+- прямой Next.js dev server: `http://localhost:3000`
+- лендинг через Caddy: `http://land.localhost`
 - api через Caddy: `http://api.localhost`
 - n8n через Caddy: `http://n8n.localhost`
 
@@ -610,19 +642,30 @@ pnpm docker:down
 
 Адреса:
 
-- `http://app.localhost`
+- `http://localhost`
+- `http://land.localhost`
 - `http://api.localhost`
 - `http://n8n.localhost`
+
+UI-поведение production по умолчанию:
+
+- web-приложение скрывает плашки с API endpoint
+- web-страница `/status` и пункт меню `Status` отключены, пока не задан `WEB_ENABLE_STATUS_PAGE=true`
 
 ## Локальные хосты для frontend-devmode и production
 
 Если твоя система не резолвит `*.localhost` автоматически, добавь в `hosts`:
 
 ```text
-127.0.0.1 app.localhost
+127.0.0.1 land.localhost
 127.0.0.1 api.localhost
 127.0.0.1 n8n.localhost
 ```
+
+Google OAuth для локальной разработки:
+
+- Authorized JavaScript origin: `http://localhost`
+- Authorized redirect URI: `http://localhost/api/auth/callback/google`
 
 ## Команды проекта
 
@@ -714,6 +757,11 @@ API status endpoint:
 
 - `GET /api/v1/status`
 - пример: `http://localhost:3001/api/v1/status`
+
+Web status page:
+
+- `GET /status`
+- в `production` скрыта по умолчанию; включается через `WEB_ENABLE_STATUS_PAGE=true`
 
 ## n8n
 

@@ -412,7 +412,8 @@ async function verifyLiveFlow(apiBase, envBase) {
     env: {
       ...envBase,
       BACKEND_PORT: String(apiPort),
-      FRONTEND_ORIGIN: "http://localhost:3000",
+      FRONTEND_ORIGIN:
+        "http://localhost,http://localhost:3000,http://land.localhost",
       APP_MODE: "backend-devmode",
       APPLICATION_PIPELINE_MODE: "live",
       N8N_WORKFLOW_WEBHOOK_URL: `http://127.0.0.1:${mockPort}/webhook/generate-cv`,
@@ -508,7 +509,8 @@ async function verifyMockFlow(apiBase, envBase) {
     env: {
       ...envBase,
       BACKEND_PORT: String(apiPort),
-      FRONTEND_ORIGIN: "http://localhost:3000",
+      FRONTEND_ORIGIN:
+        "http://localhost,http://localhost:3000,http://land.localhost",
       APP_MODE: "backend-devmode",
       APPLICATION_PIPELINE_MODE: "mock",
     },

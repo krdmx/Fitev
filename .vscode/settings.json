@@ -3,5 +3,18 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "sqltools.connections": [
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "cvcv",
+      "database": "pep",
+      "username": "pep",
+      "password": "change-me-postgres"
+    }
+  ]
 }
