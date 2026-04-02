@@ -10,11 +10,15 @@
     "test": "echo 'No tests for @repo/web'"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/utilities": "^3.2.2",
     "@repo/contracts": "workspace:*",
     "@uiw/react-markdown-preview": "^5.1.5",
     "axios": "^1.13.6",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^0.511.0",
     "next": "^15.3.4",
+    "next-auth": "^4.24.13",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
