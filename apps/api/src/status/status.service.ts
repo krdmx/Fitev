@@ -12,7 +12,7 @@ export class StatusService {
     const database = await this.checkDatabase();
 
     return {
-      service: "pep-api",
+      service: "fitev-api",
       environment:
         process.env.APP_MODE ?? process.env.NODE_ENV ?? "development",
       database,

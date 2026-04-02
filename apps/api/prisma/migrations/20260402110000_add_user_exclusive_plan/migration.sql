@@ -1,0 +1,2 @@
+ALTER TABLE "User"
+ADD COLUMN "hasExclusivePlan" BOOLEAN NOT NULL DEFAULT false;

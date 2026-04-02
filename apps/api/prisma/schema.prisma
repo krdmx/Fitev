@@ -14,6 +14,45 @@ enum ApplicationTicketStatus {
   failed
 }
 
+enum ApplicationBoardStage {
+  resume_sent
+  hr_screening
+  technical_interview
+  system_design
+  algorithm_session
+  custom_status
+  passed
+  failed
+  ignored
+}
+
+enum ApplicationCompensationCurrency {
+  USD
+  EUR
+  GBP
+  ILS
+  PLN
+  CAD
+  AUD
+}
+
+enum ApplicationCompensationPeriod {
+  yearly
+  monthly
+  hourly
+}
+
+enum BillingSubscriptionStatus {
+  active
+  trialing
+  past_due
+  canceled
+  unpaid
+  incomplete
+  incomplete_expired
+  paused
+}
+
 model AppMetadata {
   key       String   @id
   value     String
@@ -21,23 +60,151 @@ model AppMetadata {
   updatedAt DateTime @updatedAt
 }
 
+model WhitelistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id               String          @id @default(cuid())
+  email            String          @unique
+  googleSub        String          @unique
+  name             String?
+  image            String?
+  hasExclusivePlan Boolean         @default(false)
+  stripeCustomerId String?         @unique
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  profile          UserProfile?
+  tickets          ApplicationTicket[]
+  subscription     Subscription?
+  usageBuckets     UsageBucket[]
+}
+
+model UserProfile {
+  userId     String   @id
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName   String   @default("")
+  baseCv     String   @default("")
+  workTasks  String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Subscription {
+  id                    String                    @id @default(cuid())
+  userId                String                    @unique
+  user                  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId  String                    @unique
+  stripePriceId         String?
+  status                BillingSubscriptionStatus
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean                   @default(false)
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+}
+
+model UsageBucket {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthStart     DateTime
+  generatedCount Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, monthStart])
+  @@index([monthStart])
+}
+
 model ApplicationTicket {
   id                 String                  @id @default(cuid())
+  userId             String?
+  user               User?                   @relation(fields: [userId], references: [id], onDelete: SetNull)
   status             ApplicationTicketStatus
   companyName        String
   vacancyDescription String
   lastError          String?
   result             ApplicationTicketResult?
+  tracker            ApplicationTracker?
   createdAt          DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
+
+  @@index([userId, createdAt])
 }
 
 model ApplicationTicketResult {
-  ticketId          String            @id
-  ticket            ApplicationTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  cvMarkdown        String
+  ticketId            String            @id
+  ticket              ApplicationTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  cvMarkdown          String
   coverLetterMarkdown String
-  personalNote      String
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  personalNote        String
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
+model ApplicationTracker {
+  ticketId          String                          @id
+  ticket            ApplicationTicket               @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  currentStage      ApplicationBoardStage          @default(resume_sent)
+  lastTransitionAt  DateTime                       @default(now())
+  createdAt         DateTime                       @default(now())
+  updatedAt         DateTime                       @updatedAt
+  stageRecords      ApplicationTrackerStageRecord[]
+  transitionLogs    ApplicationTrackerTransitionLog[]
+}
+
+model ApplicationTrackerStageRecord {
+  id                       String                          @id @default(cuid())
+  trackerId                String
+  tracker                  ApplicationTracker              @relation(fields: [trackerId], references: [ticketId], onDelete: Cascade)
+  stageKey                 ApplicationBoardStage
+  submittedAt              DateTime?
+  jobSite                  String?
+  jobSiteOther             String?
+  notes                    String?
+  roundNumber              Int?
+  customStatusLabel        String?
+  failureReason            String?
+  salaryMinAmount          Float?
+  salaryMaxAmount          Float?
+  salaryCurrency           ApplicationCompensationCurrency?
+  salaryPeriod             ApplicationCompensationPeriod?
+  salaryNormalizedMinAmount Float?
+  salaryNormalizedMaxAmount Float?
+  createdAt                DateTime                        @default(now())
+  updatedAt                DateTime                        @updatedAt
+  questions                ApplicationTrackerStageQuestion[]
+
+  @@unique([trackerId, stageKey])
+  @@index([stageKey])
+  @@index([salaryNormalizedMinAmount])
+  @@index([salaryNormalizedMaxAmount])
+}
+
+model ApplicationTrackerStageQuestion {
+  id            String                        @id @default(cuid())
+  stageRecordId String
+  stageRecord   ApplicationTrackerStageRecord @relation(fields: [stageRecordId], references: [id], onDelete: Cascade)
+  sortOrder     Int
+  prompt        String
+  answer        String?
+  createdAt     DateTime                      @default(now())
+  updatedAt     DateTime                      @updatedAt
+
+  @@index([stageRecordId, sortOrder])
+}
+
+model ApplicationTrackerTransitionLog {
+  id        String               @id @default(cuid())
+  trackerId String
+  tracker   ApplicationTracker   @relation(fields: [trackerId], references: [ticketId], onDelete: Cascade)
+  fromStage ApplicationBoardStage?
+  toStage   ApplicationBoardStage
+  createdAt DateTime             @default(now())
+
+  @@index([trackerId, createdAt])
 }

@@ -24,13 +24,13 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 
+import { AccountService } from "../account/account.service";
 import { logHttpExchange } from "../logging/http-log.util";
 import { PrismaService } from "../prisma/prisma.service";
 
-const FULL_NAME_KEY = "fullName";
-const BASE_CV_KEY = "baseCv";
-const WORK_TASKS_KEY = "workTasks";
 const APPLICATION_PIPELINE_MOCK_DELAY_MS = 900;
+const MOCK_PIPELINE_LOCKED_VACANCY_DESCRIPTION =
+  "Mock mode is enabled. The saved base CV is returned without vacancy-specific tailoring.";
 const PREVIEW_TEXT_LENGTH = 96;
 
 type SaveApplicationResultInput = {
@@ -57,6 +57,24 @@ type PipelineDispatchInput = {
 
 type ApplicationPipelineMode = "live" | "mock";
 
+function parseBooleanEnv(value: string | undefined): boolean | undefined {
+  const normalized = value?.trim().toLowerCase();
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (["1", "true", "yes", "on"].includes(normalized)) {
+    return true;
+  }
+
+  if (["0", "false", "no", "off"].includes(normalized)) {
+    return false;
+  }
+
+  return undefined;
+}
+
 const CALLBACK_RESULT_FIELDS = [
   "personalNote",
   "cvMarkdown",
@@ -76,29 +94,37 @@ type CallbackResultField = (typeof CALLBACK_RESULT_FIELDS)[number];
 export class ApplicationsService {
   private readonly logger = new Logger("HttpLogger");
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly accountService: AccountService
+  ) {}
 
   async createApplication(
+    userId: string,
     request: CreateApplicationRequest
   ): Promise<CreateApplicationResponse> {
     const companyName = this.requireText(request?.companyName, "companyName");
-    const vacancyDescription = this.requireText(
-      request?.vacancyDescription,
-      "vacancyDescription"
-    );
+    const vacancyDescription = this.isMockPipelineEnabled()
+      ? MOCK_PIPELINE_LOCKED_VACANCY_DESCRIPTION
+      : this.requireText(request?.vacancyDescription, "vacancyDescription");
 
     const [fullName, baseCv, workTasks] = await Promise.all([
-      this.getRequiredProfileText(FULL_NAME_KEY),
-      this.getRequiredProfileText(BASE_CV_KEY),
-      this.getRequiredProfileText(WORK_TASKS_KEY),
+      this.accountService.getRequiredProfileField(userId, "fullName"),
+      this.accountService.getRequiredProfileField(userId, "baseCv"),
+      this.accountService.getRequiredProfileField(userId, "workTasks"),
     ]);
 
-    const ticket = await this.prisma.applicationTicket.create({
-      data: {
-        status: "processing",
-        companyName,
-        vacancyDescription,
-      },
+    const ticket = await this.prisma.$transaction(async (tx) => {
+      await this.accountService.consumeGenerationQuota(userId, tx);
+
+      return tx.applicationTicket.create({
+        data: {
+          userId,
+          status: "processing",
+          companyName,
+          vacancyDescription,
+        },
+      });
     });
 
     await this.dispatchApplicationPipeline({
@@ -117,8 +143,11 @@ export class ApplicationsService {
     };
   }
 
-  async listApplications(): Promise<GetApplicationsResponse> {
+  async listApplications(userId: string): Promise<GetApplicationsResponse> {
     const tickets = await this.prisma.applicationTicket.findMany({
+      where: {
+        userId,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -132,10 +161,14 @@ export class ApplicationsService {
   }
 
   async getApplicationTicket(
+    userId: string,
     ticketId: string
   ): Promise<GetApplicationTicketResponse> {
-    const ticket = await this.prisma.applicationTicket.findUnique({
-      where: { id: ticketId },
+    const ticket = await this.prisma.applicationTicket.findFirst({
+      where: {
+        id: ticketId,
+        userId,
+      },
       include: {
         result: true,
       },
@@ -159,50 +192,67 @@ export class ApplicationsService {
     };
   }
 
-  async getBaseCv(): Promise<GetBaseCvResponse> {
-    const baseCv = await this.getProfileTextOrEmpty(BASE_CV_KEY);
+  async getBaseCv(userId: string): Promise<GetBaseCvResponse> {
+    const baseCv = await this.accountService.getProfileField(userId, "baseCv");
     return { baseCv };
   }
 
-  async getFullName(): Promise<GetFullNameResponse> {
-    const fullName = await this.getProfileTextOrEmpty(FULL_NAME_KEY);
+  async getFullName(userId: string): Promise<GetFullNameResponse> {
+    const fullName = await this.accountService.getProfileField(
+      userId,
+      "fullName"
+    );
     return { fullName };
   }
 
-  async getWorkTasks(): Promise<GetWorkTasksResponse> {
-    const workTasks = await this.getProfileTextOrEmpty(WORK_TASKS_KEY);
+  async getWorkTasks(userId: string): Promise<GetWorkTasksResponse> {
+    const workTasks = await this.accountService.getProfileField(
+      userId,
+      "workTasks"
+    );
     return { workTasks };
   }
 
   async updateFullName(
+    userId: string,
     request: UpdateFullNameRequest
   ): Promise<GetFullNameResponse> {
-    const fullName = await this.saveProfileText(
-      FULL_NAME_KEY,
-      request?.fullName,
-      "fullName"
+    const fullName = await this.accountService.updateProfileField(
+      userId,
+      "fullName",
+      request?.fullName
     );
 
     return { fullName };
   }
 
-  async updateBaseCv(request: UpdateBaseCvRequest): Promise<GetBaseCvResponse> {
-    const baseCv = await this.saveProfileText(
-      BASE_CV_KEY,
-      request?.baseCv,
-      "baseCv"
+  async updateBaseCv(
+    userId: string,
+    request: UpdateBaseCvRequest
+  ): Promise<GetBaseCvResponse> {
+    if (this.isMockPipelineEnabled()) {
+      throw new BadRequestException(
+        "Base CV is locked while mock mode is enabled."
+      );
+    }
+
+    const baseCv = await this.accountService.updateProfileField(
+      userId,
+      "baseCv",
+      request?.baseCv
     );
 
     return { baseCv };
   }
 
   async updateWorkTasks(
+    userId: string,
     request: UpdateWorkTasksRequest
   ): Promise<GetWorkTasksResponse> {
-    const workTasks = await this.saveProfileText(
-      WORK_TASKS_KEY,
-      request?.workTasks,
-      "workTasks"
+    const workTasks = await this.accountService.updateProfileField(
+      userId,
+      "workTasks",
+      request?.workTasks
     );
 
     return { workTasks };
@@ -237,6 +287,7 @@ export class ApplicationsService {
   }
 
   async updateApplicationResult(
+    userId: string,
     ticketId: string,
     request: UpdateApplicationResultRequest
   ): Promise<ApplicationTicketResultResponse> {
@@ -247,8 +298,11 @@ export class ApplicationsService {
     );
 
     const updatedResult = await this.prisma.$transaction(async (tx) => {
-      const ticket = await tx.applicationTicket.findUnique({
-        where: { id: ticketId },
+      const ticket = await tx.applicationTicket.findFirst({
+        where: {
+          id: ticketId,
+          userId,
+        },
         select: { id: true },
       });
 
@@ -286,9 +340,12 @@ export class ApplicationsService {
     return this.toApplicationTicketResultResponse(updatedResult);
   }
 
-  async deleteApplication(ticketId: string): Promise<void> {
+  async deleteApplication(userId: string, ticketId: string): Promise<void> {
     const deleted = await this.prisma.applicationTicket.deleteMany({
-      where: { id: ticketId },
+      where: {
+        id: ticketId,
+        userId,
+      },
     });
 
     if (deleted.count === 0) {
@@ -296,10 +353,26 @@ export class ApplicationsService {
     }
   }
 
+  async assertTicketAccess(userId: string, ticketId: string): Promise<void> {
+    const ticket = await this.prisma.applicationTicket.findFirst({
+      where: {
+        id: ticketId,
+        userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException("Application ticket was not found.");
+    }
+  }
+
   private async dispatchApplicationPipeline(
     input: PipelineDispatchInput
   ): Promise<void> {
-    if (this.getApplicationPipelineMode() === "mock") {
+    if (this.isMockPipelineEnabled()) {
       this.scheduleMockApplicationResult(input);
       return;
     }
@@ -433,50 +506,17 @@ export class ApplicationsService {
     });
   }
 
-  private async getRequiredProfileText(key: string): Promise<string> {
-    const entry = await this.prisma.appMetadata.findUnique({
-      where: { key },
-    });
-    const value = entry?.value.trim();
-
-    if (!value) {
-      throw new ServiceUnavailableException(
-        `Application profile field "${key}" is not configured.`
-      );
-    }
-
-    return value;
-  }
-
-  private async getProfileTextOrEmpty(key: string): Promise<string> {
-    const entry = await this.prisma.appMetadata.findUnique({
-      where: { key },
-    });
-
-    return entry?.value ?? "";
-  }
-
-  private async saveProfileText(
-    key: string,
-    value: unknown,
-    fieldName: string
-  ): Promise<string> {
-    const normalized = this.requireText(value, fieldName);
-    const entry = await this.prisma.appMetadata.upsert({
-      where: { key },
-      create: {
-        key,
-        value: normalized,
-      },
-      update: {
-        value: normalized,
-      },
-    });
-
-    return entry.value;
+  private isMockPipelineEnabled() {
+    return this.getApplicationPipelineMode() === "mock";
   }
 
   private getApplicationPipelineMode(): ApplicationPipelineMode {
+    const mockMode = parseBooleanEnv(process.env.MOCK_MODE);
+
+    if (mockMode !== undefined) {
+      return mockMode ? "mock" : "live";
+    }
+
     return process.env.APPLICATION_PIPELINE_MODE?.trim().toLowerCase() ===
       "mock"
       ? "mock"
@@ -514,30 +554,14 @@ export class ApplicationsService {
   private createMockPersonalNote(input: PipelineDispatchInput): string {
     return [
       `Mock pipeline result for ${input.fullName} at ${input.companyName}.`,
-      `Vacancy preview: ${this.previewText(input.vacancyDescription)}.`,
-      `Base CV preview: ${this.previewText(input.baseCv)}.`,
+      "The saved base CV was returned as-is.",
+      `Locked vacancy: ${this.previewText(input.vacancyDescription)}.`,
       `Work tasks preview: ${this.previewText(input.workTasks)}.`,
     ].join(" ");
   }
 
   private createMockCvMarkdown(input: PipelineDispatchInput): string {
-    return [
-      `# ${input.fullName}`,
-      "",
-      "## Summary",
-      `Generated in backend-devmode for ${input.companyName} and ${this.previewText(
-        input.vacancyDescription
-      )}.`,
-      "",
-      "## Experience Highlights",
-      `- Tailored from base CV context: ${this.previewText(input.baseCv)}`,
-      `- Work task focus: ${this.previewText(input.workTasks)}`,
-      "",
-      "## Skills",
-      "- React",
-      "- TypeScript",
-      "- Product delivery",
-    ].join("\n");
+    return input.baseCv;
   }
 
   private createMockCoverLetterMarkdown(input: PipelineDispatchInput): string {
@@ -547,12 +571,10 @@ export class ApplicationsService {
       `Dear Hiring Team at ${input.companyName},`,
       "",
       `This mock cover letter was generated for ${input.fullName}.`,
-      `It references the role preview: ${this.previewText(
-        input.vacancyDescription
-      )}.`,
+      "The saved base CV was reused without vacancy-specific tailoring.",
+      `Locked vacancy: ${this.previewText(input.vacancyDescription)}.`,
       "",
       "## Why I fit",
-      `- Base CV context: ${this.previewText(input.baseCv)}`,
       `- Work tasks context: ${this.previewText(input.workTasks)}`,
       "",
       "Sincerely,",

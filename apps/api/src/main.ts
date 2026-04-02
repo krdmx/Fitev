@@ -4,16 +4,23 @@ import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
 import { AppModule } from "./app.module";
+import { validateQuotaConfiguration } from "./config/quota-config";
 import { HttpLoggingInterceptor } from "./logging/http-logging.interceptor";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  validateQuotaConfiguration();
+
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+  });
   const port = Number(process.env.BACKEND_PORT ?? 3001);
   const allowedOrigins = [
+    "http://localhost",
     "http://localhost:3000",
-    "http://app.localhost",
+    "http://land.localhost",
+    "https://localhost",
     "https://localhost:3000",
-    "https://app.localhost",
+    "https://land.localhost",
   ];
 
   app.enableCors({
