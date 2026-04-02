@@ -3,10 +3,8 @@ import { connection } from "next/server";
 
 import { ApplicationsBoard } from "@/components/applications-board";
 import { SiteHeader } from "@/components/site-header";
-import { buildApiUrl } from "@/lib/api-config";
 import { getErrorMessage } from "@/lib/api-response";
 import { getAuthenticatedServerApi } from "@/lib/server-api";
-import { getWebFeatures } from "@/lib/web-features";
 import styles from "./page.module.css";
 
 type ApplicationsBoardPageProps = {
@@ -19,7 +17,6 @@ export default async function ApplicationsBoardPage({
   searchParams,
 }: ApplicationsBoardPageProps) {
   await connection();
-  const { hideApiEndpoints } = getWebFeatures();
   const { ticketId } = await searchParams;
   const initialSelectedTicketId = Array.isArray(ticketId)
     ? ticketId[0]?.trim() || null

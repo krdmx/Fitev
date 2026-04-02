@@ -59,8 +59,6 @@ export async function SiteHeader() {
   const api = await getAuthenticatedServerApi();
   const response = await api.get<GetAccountResponse>("/api/v1/account");
   const account = response.data;
-  const displayName =
-    account.user.name?.trim() || account.user.email || "Authenticated user";
 
   return (
     <header className={styles.headerShell}>

@@ -3,15 +3,12 @@ import { connection } from "next/server";
 
 import { ApplicationsList } from "@/components/applications-list";
 import { SiteHeader } from "@/components/site-header";
-import { buildApiUrl } from "@/lib/api-config";
 import { getErrorMessage } from "@/lib/api-response";
 import { getAuthenticatedServerApi } from "@/lib/server-api";
-import { getWebFeatures } from "@/lib/web-features";
 import styles from "./page.module.css";
 
 export default async function ApplicationsPage() {
   await connection();
-  const { hideApiEndpoints } = getWebFeatures();
 
   let payload: GetApplicationsResponse | null = null;
   let errorMessage: string | null = null;
