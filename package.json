@@ -6,7 +6,7 @@
     "postinstall": "pnpm --filter @repo/api prisma:generate",
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
-    "dev:backend": "pnpm dev:backend:infra:up && cross-env NEXT_PUBLIC_API_URL=http://api.localhost APP_MODE=backend-devmode APPLICATION_PIPELINE_MODE=mock turbo run dev --parallel --filter=@repo/web --filter=@repo/api",
+    "dev:backend": "pnpm dev:backend:infra:up && cross-env NEXT_PUBLIC_API_URL=http://api.localhost APP_MODE=backend-devmode MOCK_MODE=true turbo run dev --parallel --filter=@repo/web --filter=@repo/api",
     "dev:backend:infra:up": "cross-env COMPOSE_IGNORE_ORPHANS=true docker compose -f docker-compose.backend-dev.yaml up -d postgres caddy gotenberg",
     "dev:backend:infra:down": "cross-env COMPOSE_IGNORE_ORPHANS=true docker compose -f docker-compose.backend-dev.yaml stop postgres caddy gotenberg",
     "dev:backend:infra:logs": "cross-env COMPOSE_IGNORE_ORPHANS=true docker compose -f docker-compose.backend-dev.yaml logs -f postgres caddy gotenberg",
@@ -33,5 +33,10 @@
     "turbo": "^2.5.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.35.1"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "openid-client@5.7.1": "patches/openid-client@5.7.1.patch"
+    }
   }
 }
