@@ -8,10 +8,13 @@ services:
       n8n:
         condition: service_healthy
     environment:
+      APP_HOST: ${APP_HOST}
       API_HOST: ${API_HOST}
       N8N_HOST: ${N8N_HOST}
     ports:
       - "80:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./infra/caddy/Caddyfile.frontend-dev:/etc/caddy/Caddyfile:ro
 
@@ -28,13 +31,23 @@ services:
     environment:
       NODE_ENV: production
       APP_MODE: frontend-devmode
+      MOCK_MODE: ${MOCK_MODE:-false}
       APPLICATION_PIPELINE_MODE: live
       BACKEND_PORT: ${BACKEND_PORT}
-      FRONTEND_ORIGIN: http://localhost:3000,http://app.localhost
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL}
       DATABASE_URL: ${DATABASE_URL}
       BACKEND_APP_SECRET: ${BACKEND_APP_SECRET}
+      INTERNAL_API_SHARED_SECRET: ${INTERNAL_API_SHARED_SECRET}
+      FREE_PLAN_MONTHLY_GENERATION_LIMIT: ${FREE_PLAN_MONTHLY_GENERATION_LIMIT:-3}
+      PAID_PLAN_MONTHLY_GENERATION_LIMIT: ${PAID_PLAN_MONTHLY_GENERATION_LIMIT:-50}
+      LOCAL_QUOTA_BYPASS_EMAILS: ${LOCAL_QUOTA_BYPASS_EMAILS:-}
+      BILLING_MODE: ${BILLING_MODE:-mock}
       GOTENBERG_URL: http://gotenberg:3000
       N8N_WORKFLOW_WEBHOOK_URL: ${N8N_WORKFLOW_WEBHOOK_URL:-http://n8n:5678/webhook/generate-cv}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_PRICE_ID_MONTHLY: ${STRIPE_PRICE_ID_MONTHLY}
     healthcheck:
       test:
         [

@@ -3,6 +3,7 @@ services:
     image: caddy:2.10.2-alpine
     restart: unless-stopped
     environment:
+      APP_HOST: ${APP_HOST}
       API_HOST: ${API_HOST}
     ports:
       - "80:80"

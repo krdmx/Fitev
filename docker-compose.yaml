@@ -24,6 +24,8 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_MARKETING_URL: ${NEXT_PUBLIC_MARKETING_URL}
     restart: unless-stopped
     depends_on:
       api:
@@ -32,7 +34,18 @@ services:
       - "api.localhost:host-gateway"
     environment:
       NODE_ENV: production
+      APP_MODE: ${APP_MODE:-production}
+      MOCK_MODE: ${MOCK_MODE:-false}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      NEXT_PUBLIC_MARKETING_URL: ${NEXT_PUBLIC_MARKETING_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      INTERNAL_API_SHARED_SECRET: ${INTERNAL_API_SHARED_SECRET}
+      WEB_HIDE_API_ENDPOINTS: ${WEB_HIDE_API_ENDPOINTS:-true}
+      WEB_ENABLE_STATUS_PAGE: ${WEB_ENABLE_STATUS_PAGE:-false}
     healthcheck:
       test:
         [
@@ -59,13 +72,23 @@ services:
     environment:
       NODE_ENV: production
       APP_MODE: ${APP_MODE:-production}
+      MOCK_MODE: ${MOCK_MODE:-false}
       APPLICATION_PIPELINE_MODE: ${APPLICATION_PIPELINE_MODE:-live}
       BACKEND_PORT: ${BACKEND_PORT}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL}
       DATABASE_URL: ${DATABASE_URL}
       BACKEND_APP_SECRET: ${BACKEND_APP_SECRET}
+      INTERNAL_API_SHARED_SECRET: ${INTERNAL_API_SHARED_SECRET}
+      FREE_PLAN_MONTHLY_GENERATION_LIMIT: ${FREE_PLAN_MONTHLY_GENERATION_LIMIT:-3}
+      PAID_PLAN_MONTHLY_GENERATION_LIMIT: ${PAID_PLAN_MONTHLY_GENERATION_LIMIT:-50}
+      LOCAL_QUOTA_BYPASS_EMAILS: ${LOCAL_QUOTA_BYPASS_EMAILS:-}
+      BILLING_MODE: ${BILLING_MODE:-mock}
       GOTENBERG_URL: http://gotenberg:3000
       N8N_WORKFLOW_WEBHOOK_URL: ${N8N_WORKFLOW_WEBHOOK_URL:-http://n8n:5678/webhook/generate-cv}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_PRICE_ID_MONTHLY: ${STRIPE_PRICE_ID_MONTHLY}
     healthcheck:
       test:
         [
@@ -103,6 +126,7 @@ services:
     depends_on:
       gotenberg:
         condition: service_started
+        
     environment:
       NODE_ENV: production
       N8N_HOST: ${N8N_HOST}
@@ -145,6 +169,7 @@ services:
 
   gotenberg:
     image: gotenberg/gotenberg:8
+    mem_limit: 256mb
     restart: unless-stopped
 
 volumes:
