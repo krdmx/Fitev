@@ -3,7 +3,7 @@
   admin off
 }
 
-http://localhost, http://land.localhost {
+http://localhost {
   reverse_proxy web:3000
 }
 

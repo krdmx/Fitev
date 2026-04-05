@@ -14,10 +14,8 @@ async function bootstrap() {
   const allowedOrigins = [
     "http://localhost",
     "http://localhost:3000",
-    "http://land.localhost",
     "https://localhost",
     "https://localhost:3000",
-    "https://land.localhost",
   ];
 
   app.enableCors({

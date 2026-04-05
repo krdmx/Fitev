@@ -1,24 +1,15 @@
 import type { GetApplicationsResponse } from "@repo/contracts";
-import { headers } from "next/headers";
 import { connection } from "next/server";
 
 import { ApplicationForm } from "@/components/application-form";
 import { HomeInsights } from "@/components/home-insights";
-import { MarketingLandingPage } from "@/components/marketing/landing-page";
 import { SiteHeader } from "@/components/site-header";
-import { isAppHost } from "@/lib/app-urls";
 import { getErrorMessage } from "@/lib/api-response";
 import { getAuthenticatedServerApi } from "@/lib/server-api";
 import styles from "./page.module.css";
 
 export default async function HomePage() {
   await connection();
-  const requestHeaders = await headers();
-  const host = requestHeaders.get("host");
-
-  if (!isAppHost(host)) {
-    return <MarketingLandingPage />;
-  }
 
   let applicationsPayload: GetApplicationsResponse | null = null;
   let applicationsErrorMessage: string | null = null;

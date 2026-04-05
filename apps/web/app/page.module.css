@@ -4,47 +4,6 @@
   padding: 2.25rem 0 3rem;
 }
 
-.landingShell {
-  display: grid;
-  min-height: 100vh;
-  place-items: center;
-  padding: 1.5rem;
-}
-
-.landingHero {
-  width: min(100%, 54rem);
-  padding: 2.25rem;
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-xl);
-  background: var(--panel);
-  box-shadow: var(--shadow);
-}
-
-.landingTitle {
-  margin: 0;
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-size: clamp(2.7rem, 8vw, 5.6rem);
-  line-height: 0.95;
-  letter-spacing: -0.06em;
-}
-
-.landingCopy {
-  max-width: 42rem;
-  margin: 1.2rem 0 0;
-  color: var(--muted);
-  font-size: 1.05rem;
-  line-height: 1.8;
-}
-
-.landingActions {
-  display: flex;
-  gap: 0.9rem;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: 1.5rem;
-}
-
 .primaryLink,
 .secondaryLink {
   display: inline-flex;
@@ -215,10 +174,6 @@
   .pageShell {
     width: calc(100% - 1rem);
     padding-top: 1rem;
-  }
-
-  .landingHero {
-    padding: 1.5rem;
   }
 
   .cardHeadingRow,

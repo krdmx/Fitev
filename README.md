@@ -65,7 +65,6 @@ pnpm logs
 ## URLs
 
 - App: `http://localhost`
-- Landing page: `http://land.localhost`
 - API: `http://api.localhost`
 - n8n: `http://n8n.localhost`
 
@@ -73,7 +72,6 @@ Modern systems usually resolve `*.localhost` automatically. If yours does not,
 add these entries to your hosts file:
 
 ```text
-127.0.0.1 land.localhost
 127.0.0.1 api.localhost
 127.0.0.1 n8n.localhost
 ```
@@ -83,5 +81,5 @@ add these entries to your hosts file:
 - There is no user auth, billing, quota, or subscription flow.
 - The app always runs as one local workspace user.
 - The tracked n8n seed workflow comes from
-  [`PEP Workflow Seed (5).json`](/mnt/c/Users/maxim/Documents/pep/PEP%20Workflow%20Seed%20(5).json).
+  [`PEP Workflow Seed (5).json`](</mnt/c/Users/maxim/Documents/pep/PEP%20Workflow%20Seed%20(5).json>).
 - n8n imports Gemini and Tavily credentials from the two root env variables on startup.
