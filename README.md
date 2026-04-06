@@ -80,6 +80,4 @@ add these entries to your hosts file:
 
 - There is no user auth, billing, quota, or subscription flow.
 - The app always runs as one local workspace user.
-- The tracked n8n seed workflow comes from
-  [`PEP Workflow Seed (5).json`](</mnt/c/Users/maxim/Documents/pep/PEP%20Workflow%20Seed%20(5).json>).
 - n8n imports Gemini and Tavily credentials from the two root env variables on startup.
